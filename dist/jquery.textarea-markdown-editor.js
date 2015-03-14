@@ -129,7 +129,7 @@
 
   })();
 
-  $.fn.markdownable = function(options) {
+  $.fn.markdownEditor = function(options) {
     if (options == null) {
       options = {};
     }
@@ -138,7 +138,7 @@
       onInsertedList: null
     }, options);
     this.each(function() {
-      return $(this).data('markdownable', new MarkdownEditor(this, options));
+      return $(this).data('markdownEditor', new MarkdownEditor(this, options));
     });
     return this;
   };

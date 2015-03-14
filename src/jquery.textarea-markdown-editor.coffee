@@ -94,13 +94,13 @@ class MarkdownEditor
   current_pos: ->
     @$el.caret('pos')
 
-$.fn.markdownable = (options = {}) ->
+$.fn.markdownEditor = (options = {}) ->
   options = $.extend
     tabSize: 2
     onInsertedList: null
   , options
 
   @each ->
-    $(@).data('markdownable', new MarkdownEditor(@, options))
+    $(@).data('markdownEditor', new MarkdownEditor(@, options))
 
   @

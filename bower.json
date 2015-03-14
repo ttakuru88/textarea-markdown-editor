@@ -1,11 +1,11 @@
 {
-  "name": "jquery.textareaMarkdownable",
+  "name": "jquery.textarea-markdown-editor",
   "version": "0.1.0",
-  "homepage": "https://github.com/ttakuru88/jquery.textareaMarkdownable",
+  "homepage": "https://github.com/ttakuru88/jquery.textarea-markdown-editor",
   "authors": [
     "ttakuru88"
   ],
-  "main": "dist/jquery.textareaMarkdownable.js",
+  "main": "dist/jquery.textarea-markdown-editor.js",
   "keywords": [
     "jquery",
     "textarea",

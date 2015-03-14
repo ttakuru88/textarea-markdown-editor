@@ -1,8 +1,8 @@
 {
-  "name": "jquery.textareaMarkdownable",
+  "name": "jquery.textarea-markdown-Editor",
   "version": "0.1.0",
   "description": "",
-  "main": "dist/jquery.textareaMarkdownable.js",
+  "main": "dist/jquery.textarea-markdown-Editor.js",
   "dependencies": {
     "grunt": "^0.4.5",
     "grunt-contrib-coffee": "^0.13.0",
@@ -18,12 +18,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ttakuru88/jquery.textareaMarkdownable.git"
+    "url": "https://github.com/ttakuru88/jquery.textarea-markdown-Editor.git"
   },
   "author": "ttakuru88",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ttakuru88/jquery.textareaMarkdownable/issues"
+    "url": "https://github.com/ttakuru88/jquery.textarea-markdown-Editor/issues"
   },
-  "homepage": "https://github.com/ttakuru88/jquery.textareaMarkdownable"
+  "homepage": "https://github.com/ttakuru88/jquery.textarea-markdown-Editor"
 }

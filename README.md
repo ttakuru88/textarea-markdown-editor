@@ -1,1 +1,1 @@
-# jquery.textareaMarkdownable
+# jquery.textarea-markdown-editor
