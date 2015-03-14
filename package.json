@@ -1,0 +1,28 @@
+{
+  "name": "jquery.textareaMarkdownable",
+  "version": "0.1.0",
+  "description": "",
+  "main": "dist/jquery.textareaMarkdownable.js",
+  "dependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-coffee": "^0.13.0",
+    "grunt-contrib-copy": "^0.8.0"
+  },
+  "devDependencies": {
+    "grunt-contrib-clean": "^0.6.0",
+    "grunt-contrib-watch": "^0.6.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ttakuru88/jquery.textareaMarkdownable.git"
+  },
+  "author": "ttakuru88",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ttakuru88/jquery.textareaMarkdownable/issues"
+  },
+  "homepage": "https://github.com/ttakuru88/jquery.textareaMarkdownable"
+}
