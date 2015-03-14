@@ -1,0 +1,25 @@
+{
+  "name": "jquery.textareaMarkdownable",
+  "version": "0.1.0",
+  "homepage": "https://github.com/ttakuru88/jquery.textareaMarkdownable",
+  "authors": [
+    "ttakuru88"
+  ],
+  "main": "dist/jquery.textareaMarkdownable.js",
+  "keywords": [
+    "jquery",
+    "textarea",
+    "markdown"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "Caret.js": "~0.2.2"
+  }
+}
