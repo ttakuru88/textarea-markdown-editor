@@ -29,6 +29,20 @@ describe 'Support list input', ->
         action()
         expect(textarea.val()).to.eql 'abc'
 
+    context 'start with "- - - - -"', ->
+      beforeEach -> line = '- - - - -'
+
+      it 'do nothing', ->
+        action()
+        expect(textarea.val()).to.eql '- - - - -'
+
+    context 'start with "- - - - - a"', ->
+      beforeEach -> line = '- - - - - a'
+
+      it 'start with "- " next line', ->
+        action()
+        expect(textarea.val()).to.eql "- - - - - a\n- "
+
     context 'only "- "', ->
       beforeEach -> line = '- '
 

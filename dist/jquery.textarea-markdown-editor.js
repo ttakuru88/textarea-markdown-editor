@@ -8,9 +8,11 @@
   };
 
   MarkdownEditor = (function() {
-    var listFormat;
+    var hrFormat, listFormat;
 
     listFormat = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/;
+
+    hrFormat = /^\s*-\s+-\s+-(\s+-)*\s*$/;
 
     function MarkdownEditor(el, options1) {
       var i, j, ref;
@@ -45,6 +47,9 @@
       }
       text = this.getTextArray();
       currentLine = this.getCurrentLine(text);
+      if (currentLine.match(hrFormat)) {
+        return;
+      }
       match = currentLine.match(listFormat);
       if (!match) {
         return;

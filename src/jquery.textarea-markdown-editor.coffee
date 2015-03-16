@@ -4,6 +4,7 @@ KeyCodes =
 
 class MarkdownEditor
   listFormat = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/
+  hrFormat = /^\s*-\s+-\s+-(\s+-)*\s*$/
 
   constructor: (@el, @options) ->
     @$el = $(@el)
@@ -24,6 +25,7 @@ class MarkdownEditor
     text = @getTextArray()
 
     currentLine = @getCurrentLine(text)
+    return if currentLine.match(hrFormat)
 
     match = currentLine.match(listFormat)
     return if !match
