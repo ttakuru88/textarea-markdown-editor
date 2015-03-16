@@ -16,6 +16,7 @@ module.exports = (grunt) ->
         files:
           'dist/index.html': 'src/index.html'
           'dist/caret.js': 'bower_components/Caret.js/dist/jquery.caret.min.js'
+          'dist/jquery.js': 'bower_components/jquery/dist/jquery.min.js'
 
   grunt.registerTask 'default', ['clean', 'coffee', 'copy']
 

@@ -20,6 +20,7 @@
     "tests"
   ],
   "dependencies": {
-    "Caret.js": "~0.2.2"
+    "Caret.js": "~0.2.2",
+    "jquery": "~2.1.3"
   }
 }
