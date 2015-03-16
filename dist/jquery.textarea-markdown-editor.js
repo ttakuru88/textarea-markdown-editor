@@ -24,8 +24,12 @@
       }
       this.$el.on('keydown', (function(_this) {
         return function(e) {
-          _this.supportInputListFormat(e);
-          return _this.tabToSpace(e);
+          if (_this.options.list) {
+            _this.supportInputListFormat(e);
+          }
+          if (_this.options.tabToSpace) {
+            return _this.tabToSpace(e);
+          }
         };
       })(this));
     }
@@ -164,7 +168,9 @@
     } else {
       options = $.extend({
         tabSize: 2,
-        onInsertedList: null
+        onInsertedList: null,
+        tabToSpace: true,
+        list: true
       }, options);
       this.each(function() {
         return $(this).data('markdownEditor', new MarkdownEditor(this, options));

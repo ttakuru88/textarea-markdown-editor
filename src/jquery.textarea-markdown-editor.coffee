@@ -12,8 +12,8 @@ class MarkdownEditor
     @tabSpaces += ' ' for i in [0...@options.tabSize]
 
     @$el.on 'keydown', (e) =>
-      @supportInputListFormat(e)
-      @tabToSpace(e)
+      @supportInputListFormat(e) if @options.list
+      @tabToSpace(e) if @options.tabToSpace
 
   getTextArray: ->
     @$el.val().split('')
@@ -115,6 +115,8 @@ $.fn.markdownEditor = (options = {}, args = undefined) ->
     options = $.extend
       tabSize: 2
       onInsertedList: null
+      tabToSpace: true
+      list: true
     , options
 
     @each ->
