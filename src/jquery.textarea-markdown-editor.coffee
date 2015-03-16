@@ -3,7 +3,7 @@ KeyCodes =
   enter: 13
 
 class MarkdownEditor
-  list_format: /^(\s*(-|\*|\+|\d+?\.)\s+)(\S*)/
+  list_format: /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/
 
   constructor: (@el, @options) ->
     @$el = $(@el)
@@ -24,7 +24,7 @@ class MarkdownEditor
 
     match = current_line.match(@list_format)
     return if !match
-    if match[3].length <= 0
+    if match[5].length <= 0
       @remove_current_line(text)
       return
 

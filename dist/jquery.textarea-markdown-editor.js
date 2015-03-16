@@ -8,7 +8,7 @@
   };
 
   MarkdownEditor = (function() {
-    MarkdownEditor.prototype.list_format = /^(\s*(-|\*|\+|\d+?\.)\s+)(\S*)/;
+    MarkdownEditor.prototype.list_format = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/;
 
     function MarkdownEditor(el, options1) {
       var i, j, ref;
@@ -39,7 +39,7 @@
       if (!match) {
         return;
       }
-      if (match[3].length <= 0) {
+      if (match[5].length <= 0) {
         this.remove_current_line(text);
         return;
       }

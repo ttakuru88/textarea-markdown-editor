@@ -63,3 +63,17 @@ describe 'Support list input', ->
       it 'keep spaces next line', ->
         action()
         expect(textarea.val()).to.eql "-  abc\n-  "
+
+    context 'start with "- [ ] "', ->
+      beforeEach -> line = '- [ ] abc'
+
+      it 'start with "- [ ] "', ->
+        action()
+        expect(textarea.val()).to.eql "- [ ] abc\n- [ ] "
+
+    context 'start with "- [x] "', ->
+      beforeEach -> line = '- [x] abc'
+
+      it 'start with "- [x] "', ->
+        action()
+        expect(textarea.val()).to.eql "- [x] abc\n- [x] "
