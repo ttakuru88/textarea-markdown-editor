@@ -17,6 +17,9 @@ module.exports = (grunt) ->
           'dist/index.html': 'src/index.html'
           'dist/caret.js': 'bower_components/Caret.js/dist/jquery.caret.min.js'
           'dist/jquery.js': 'bower_components/jquery/dist/jquery.min.js'
+    karma:
+      continuous:
+        configFile: 'karma.conf.coffee'
 
   grunt.registerTask 'default', ['clean', 'coffee', 'copy']
 
@@ -24,3 +27,4 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks('grunt-contrib-coffee')
   grunt.loadNpmTasks('grunt-contrib-copy')
   grunt.loadNpmTasks('grunt-contrib-watch')
+  grunt.loadNpmTasks('grunt-karma')
