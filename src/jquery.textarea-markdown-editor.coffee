@@ -1,3 +1,7 @@
+KeyCodes =
+  tab: 9
+  enter: 13
+
 class MarkdownEditor
   list_format: /^(\s*(-|\*|\+|\d+?\.)\s+)(\S*)/
 
@@ -12,7 +16,7 @@ class MarkdownEditor
       @tab_to_space(e)
 
   support_input_list_format: (e) ->
-    return if e.keyCode != 13 || e.shiftKey
+    return if e.keyCode != KeyCodes.enter || e.shiftKey
 
     text = @$el.val().split('')
 
@@ -52,7 +56,7 @@ class MarkdownEditor
     @el.setSelectionRange(begin_pos , begin_pos)
 
   tab_to_space: (e) =>
-    return if e.keyCode != 9
+    return if e.keyCode != KeyCodes.tab
     e.preventDefault()
 
     text = @$el.val().split('')

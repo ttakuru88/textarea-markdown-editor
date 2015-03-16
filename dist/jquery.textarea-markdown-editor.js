@@ -1,6 +1,11 @@
 (function() {
-  var MarkdownEditor,
+  var KeyCodes, MarkdownEditor,
     bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
+  KeyCodes = {
+    tab: 9,
+    enter: 13
+  };
 
   MarkdownEditor = (function() {
     MarkdownEditor.prototype.list_format = /^(\s*(-|\*|\+|\d+?\.)\s+)(\S*)/;
@@ -25,7 +30,7 @@
 
     MarkdownEditor.prototype.support_input_list_format = function(e) {
       var base, current_line, ext_space, match, text;
-      if (e.keyCode !== 13 || e.shiftKey) {
+      if (e.keyCode !== KeyCodes.enter || e.shiftKey) {
         return;
       }
       text = this.$el.val().split('');
@@ -67,7 +72,7 @@
 
     MarkdownEditor.prototype.tab_to_space = function(e) {
       var current_line, pos, text;
-      if (e.keyCode !== 9) {
+      if (e.keyCode !== KeyCodes.tab) {
         return;
       }
       e.preventDefault();
