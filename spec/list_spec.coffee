@@ -5,15 +5,15 @@ describe 'Support list input', ->
 
     beforeEach ->
       textarea = $('<textarea>').markdownEditor()
-      down_event = $.Event('keydown', keyCode: 40)
-      enter_event = $.Event('keydown', keyCode: 13)
+      downEvent = $.Event('keydown', keyCode: 40)
+      enterEvent = $.Event('keydown', keyCode: 13)
 
       action = ->
         textarea.val(line)
-        textarea.data('markdownEditor').current_pos = -> # stub
+        textarea.data('markdownEditor').currentPos = -> # stub
           line.length
 
-        textarea.trigger(down_event).trigger(enter_event)
+        textarea.trigger(downEvent).trigger(enterEvent)
 
     context 'empty line', ->
       beforeEach -> line = ''

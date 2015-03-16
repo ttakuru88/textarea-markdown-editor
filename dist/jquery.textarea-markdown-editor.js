@@ -8,131 +8,140 @@
   };
 
   MarkdownEditor = (function() {
-    MarkdownEditor.prototype.list_format = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/;
+    var listFormat;
+
+    listFormat = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/;
 
     function MarkdownEditor(el, options1) {
       var i, j, ref;
       this.el = el;
       this.options = options1;
-      this.tab_to_space = bind(this.tab_to_space, this);
+      this.tabToSpace = bind(this.tabToSpace, this);
       this.$el = $(this.el);
-      this.tab_spaces = '';
+      this.tabSpaces = '';
       for (i = j = 0, ref = this.options.tabSize; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
-        this.tab_spaces += ' ';
+        this.tabSpaces += ' ';
       }
       this.$el.on('keydown', (function(_this) {
         return function(e) {
-          _this.support_input_list_format(e);
-          return _this.tab_to_space(e);
+          _this.supportInputListFormat(e);
+          return _this.tabToSpace(e);
         };
       })(this));
     }
 
-    MarkdownEditor.prototype.support_input_list_format = function(e) {
-      var base, current_line, ext_space, match, text;
+    MarkdownEditor.prototype.getTextArray = function() {
+      return this.$el.val().split('');
+    };
+
+    MarkdownEditor.prototype.supportInputListFormat = function(e) {
+      var base, currentLine, extSpace, match, text;
       if (e.keyCode !== KeyCodes.enter || e.shiftKey) {
         return;
       }
-      text = this.$el.val().split('');
-      current_line = this.get_current_line(text);
-      match = current_line.match(this.list_format);
+      text = this.getTextArray();
+      currentLine = this.getCurrentLine(text);
+      match = currentLine.match(listFormat);
       if (!match) {
         return;
       }
       if (match[5].length <= 0) {
-        this.remove_current_line(text);
+        this.removeCurrentLine(text);
         return;
       }
-      ext_space = e.ctrlKey ? this.tab_spaces : '';
-      this.insert(text, "\n" + ext_space + match[1]);
+      extSpace = e.ctrlKey ? this.tabSpaces : '';
+      this.insert(text, "\n" + extSpace + match[1]);
       e.preventDefault();
       return typeof (base = this.options).onInsertedList === "function" ? base.onInsertedList(e) : void 0;
     };
 
-    MarkdownEditor.prototype.get_current_line = function(text_array) {
-      var after_chars, before_chars, pos;
-      pos = this.current_pos() - 1;
-      before_chars = '';
-      while (text_array[pos] && text_array[pos] !== "\n") {
-        before_chars = "" + text_array[pos] + before_chars;
+    MarkdownEditor.prototype.getCurrentLine = function(textArray) {
+      var afterChars, beforeChars, pos;
+      if (textArray == null) {
+        textArray = this.getTextArray();
+      }
+      pos = this.currentPos() - 1;
+      beforeChars = '';
+      while (textArray[pos] && textArray[pos] !== "\n") {
+        beforeChars = "" + textArray[pos] + beforeChars;
         pos--;
       }
-      pos = this.current_pos();
-      after_chars = '';
-      while (text_array[pos] && text_array[pos] !== "\n") {
-        after_chars = "" + after_chars + text_array[pos];
+      pos = this.currentPos();
+      afterChars = '';
+      while (textArray[pos] && textArray[pos] !== "\n") {
+        afterChars = "" + afterChars + textArray[pos];
         pos++;
       }
-      return "" + before_chars + after_chars;
+      return "" + beforeChars + afterChars;
     };
 
-    MarkdownEditor.prototype.remove_current_line = function(text_array) {
-      var begin_pos, end_pos, remove_length;
-      end_pos = this.current_pos();
-      begin_pos = this.get_head_pos(text_array, end_pos);
-      remove_length = end_pos - begin_pos;
-      text_array.splice(begin_pos, remove_length);
-      this.$el.val(text_array.join(''));
-      return this.el.setSelectionRange(begin_pos, begin_pos);
+    MarkdownEditor.prototype.removeCurrentLine = function(textArray) {
+      var beginPos, endPos, removeLength;
+      endPos = this.currentPos();
+      beginPos = this.getHeadPos(textArray, endPos);
+      removeLength = endPos - beginPos;
+      textArray.splice(beginPos, removeLength);
+      this.$el.val(textArray.join(''));
+      return this.el.setSelectionRange(beginPos, beginPos);
     };
 
-    MarkdownEditor.prototype.tab_to_space = function(e) {
-      var current_line, pos, text;
+    MarkdownEditor.prototype.tabToSpace = function(e) {
+      var currentLine, pos, text;
       if (e.keyCode !== KeyCodes.tab) {
         return;
       }
       e.preventDefault();
-      text = this.$el.val().split('');
-      current_line = this.get_current_line(text);
-      if (current_line.match(this.list_format)) {
-        pos = this.get_head_pos(text);
+      text = this.getTextArray();
+      currentLine = this.getCurrentLine(text);
+      if (currentLine.match(listFormat)) {
+        pos = this.getHeadPos(text);
         if (e.shiftKey) {
-          if (current_line.indexOf(this.tab_spaces) === 0) {
-            return this.remove_spaces(text, pos);
+          if (currentLine.indexOf(this.tabSpaces) === 0) {
+            return this.removeSpaces(text, pos);
           }
         } else {
-          return this.insert_spaces(text, pos);
+          return this.insertSpaces(text, pos);
         }
       } else {
-        return this.insert(text, this.tab_spaces);
+        return this.insert(text, this.tabSpaces);
       }
     };
 
-    MarkdownEditor.prototype.insert_spaces = function(text, pos) {
-      var next_pos;
-      next_pos = this.current_pos() + this.tab_spaces.length;
-      this.insert(text, this.tab_spaces, pos);
-      return this.el.setSelectionRange(next_pos, next_pos);
+    MarkdownEditor.prototype.insertSpaces = function(text, pos) {
+      var nextPos;
+      nextPos = this.currentPos() + this.tabSpaces.length;
+      this.insert(text, this.tabSpaces, pos);
+      return this.el.setSelectionRange(nextPos, nextPos);
     };
 
-    MarkdownEditor.prototype.remove_spaces = function(text, pos) {
-      text.splice(pos, this.tab_spaces.length);
-      pos = this.current_pos() - this.tab_spaces.length;
+    MarkdownEditor.prototype.removeSpaces = function(text, pos) {
+      text.splice(pos, this.tabSpaces.length);
+      pos = this.currentPos() - this.tabSpaces.length;
       this.$el.val(text.join(''));
       return this.el.setSelectionRange(pos, pos);
     };
 
-    MarkdownEditor.prototype.get_head_pos = function(text_array, pos) {
+    MarkdownEditor.prototype.getHeadPos = function(textArray, pos) {
       if (pos == null) {
-        pos = this.current_pos();
+        pos = this.currentPos();
       }
-      while (pos > 0 && text_array[pos - 1] !== "\n") {
+      while (pos > 0 && textArray[pos - 1] !== "\n") {
         pos--;
       }
       return pos;
     };
 
-    MarkdownEditor.prototype.insert = function(text_array, insert_text, pos) {
+    MarkdownEditor.prototype.insert = function(textArray, insertText, pos) {
       if (pos == null) {
-        pos = this.current_pos();
+        pos = this.currentPos();
       }
-      text_array.splice(pos, 0, insert_text);
-      this.$el.val(text_array.join(''));
-      pos += insert_text.length;
+      textArray.splice(pos, 0, insertText);
+      this.$el.val(textArray.join(''));
+      pos += insertText.length;
       return this.el.setSelectionRange(pos, pos);
     };
 
-    MarkdownEditor.prototype.current_pos = function() {
+    MarkdownEditor.prototype.currentPos = function() {
       return this.$el.caret('pos');
     };
 
@@ -140,18 +149,28 @@
 
   })();
 
-  $.fn.markdownEditor = function(options) {
+  $.fn.markdownEditor = function(options, args) {
     if (options == null) {
       options = {};
     }
-    options = $.extend({
-      tabSize: 2,
-      onInsertedList: null
-    }, options);
-    this.each(function() {
-      return $(this).data('markdownEditor', new MarkdownEditor(this, options));
-    });
-    return this;
+    if (args == null) {
+      args = void 0;
+    }
+    if (typeof options === 'string') {
+      return this.each(function() {
+        var base;
+        return typeof (base = $(this).data('markdownEditor'))[options] === "function" ? base[options](args) : void 0;
+      });
+    } else {
+      options = $.extend({
+        tabSize: 2,
+        onInsertedList: null
+      }, options);
+      this.each(function() {
+        return $(this).data('markdownEditor', new MarkdownEditor(this, options));
+      });
+      return this;
+    }
   };
 
 }).call(this);

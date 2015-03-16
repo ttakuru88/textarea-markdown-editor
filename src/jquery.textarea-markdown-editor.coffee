@@ -3,114 +3,121 @@ KeyCodes =
   enter: 13
 
 class MarkdownEditor
-  list_format: /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/
+  listFormat = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/
 
   constructor: (@el, @options) ->
     @$el = $(@el)
 
-    @tab_spaces = ''
-    @tab_spaces += ' ' for i in [0...@options.tabSize]
+    @tabSpaces = ''
+    @tabSpaces += ' ' for i in [0...@options.tabSize]
 
     @$el.on 'keydown', (e) =>
-      @support_input_list_format(e)
-      @tab_to_space(e)
+      @supportInputListFormat(e)
+      @tabToSpace(e)
 
-  support_input_list_format: (e) ->
+  getTextArray: ->
+    @$el.val().split('')
+
+  supportInputListFormat: (e) ->
     return if e.keyCode != KeyCodes.enter || e.shiftKey
 
-    text = @$el.val().split('')
+    text = @getTextArray()
 
-    current_line = @get_current_line(text)
+    currentLine = @getCurrentLine(text)
 
-    match = current_line.match(@list_format)
+    match = currentLine.match(listFormat)
     return if !match
     if match[5].length <= 0
-      @remove_current_line(text)
+      @removeCurrentLine(text)
       return
 
-    ext_space = if e.ctrlKey then @tab_spaces else ''
+    extSpace = if e.ctrlKey then @tabSpaces else ''
 
-    @insert(text, "\n#{ext_space}#{match[1]}")
+    @insert(text, "\n#{extSpace}#{match[1]}")
 
     e.preventDefault()
 
     @options.onInsertedList?(e)
 
-  get_current_line: (text_array) ->
-    pos = @current_pos() - 1
-    before_chars = ''
-    while text_array[pos] && text_array[pos] != "\n"
-      before_chars = "#{text_array[pos]}#{before_chars}"
+  getCurrentLine: (textArray = @getTextArray()) ->
+    pos = @currentPos() - 1
+    beforeChars = ''
+    while textArray[pos] && textArray[pos] != "\n"
+      beforeChars = "#{textArray[pos]}#{beforeChars}"
       pos--
 
-    pos = @current_pos()
-    after_chars = ''
-    while text_array[pos] && text_array[pos] != "\n"
-      after_chars = "#{after_chars}#{text_array[pos]}"
+    pos = @currentPos()
+    afterChars = ''
+    while textArray[pos] && textArray[pos] != "\n"
+      afterChars = "#{afterChars}#{textArray[pos]}"
       pos++
 
-    "#{before_chars}#{after_chars}"
+    "#{beforeChars}#{afterChars}"
 
-  remove_current_line: (text_array) ->
-    end_pos = @current_pos()
-    begin_pos = @get_head_pos(text_array, end_pos)
+  removeCurrentLine: (textArray) ->
+    endPos = @currentPos()
+    beginPos = @getHeadPos(textArray, endPos)
 
-    remove_length = end_pos - begin_pos
-    text_array.splice(begin_pos, remove_length)
+    removeLength = endPos - beginPos
+    textArray.splice(beginPos, removeLength)
 
-    @$el.val(text_array.join(''))
-    @el.setSelectionRange(begin_pos , begin_pos)
+    @$el.val(textArray.join(''))
+    @el.setSelectionRange(beginPos , beginPos)
 
-  tab_to_space: (e) =>
+  tabToSpace: (e) =>
     return if e.keyCode != KeyCodes.tab
     e.preventDefault()
 
-    text = @$el.val().split('')
-    current_line = @get_current_line(text)
-    if current_line.match(@list_format)
-      pos = @get_head_pos(text)
+    text = @getTextArray()
+    currentLine = @getCurrentLine(text)
+    if currentLine.match(listFormat)
+      pos = @getHeadPos(text)
 
       if e.shiftKey
-        @remove_spaces(text, pos) if current_line.indexOf(@tab_spaces) == 0
+        @removeSpaces(text, pos) if currentLine.indexOf(@tabSpaces) == 0
       else
-        @insert_spaces(text, pos)
+        @insertSpaces(text, pos)
     else
-      @insert(text, @tab_spaces)
+      @insert(text, @tabSpaces)
 
-  insert_spaces: (text, pos) ->
-    next_pos = @current_pos() + @tab_spaces.length
+  insertSpaces: (text, pos) ->
+    nextPos = @currentPos() + @tabSpaces.length
 
-    @insert(text, @tab_spaces, pos)
-    @el.setSelectionRange(next_pos, next_pos)
+    @insert(text, @tabSpaces, pos)
+    @el.setSelectionRange(nextPos, nextPos)
 
-  remove_spaces: (text, pos) ->
-    text.splice(pos, @tab_spaces.length)
-    pos = @current_pos() - @tab_spaces.length
+  removeSpaces: (text, pos) ->
+    text.splice(pos, @tabSpaces.length)
+    pos = @currentPos() - @tabSpaces.length
 
     @$el.val(text.join(''))
     @el.setSelectionRange(pos, pos)
 
-  get_head_pos: (text_array, pos = @current_pos()) ->
-    pos-- while pos > 0 && text_array[pos-1] != "\n"
+  getHeadPos: (textArray, pos = @currentPos()) ->
+    pos-- while pos > 0 && textArray[pos-1] != "\n"
     pos
 
-  insert: (text_array, insert_text, pos = @current_pos()) ->
-    text_array.splice(pos, 0, insert_text)
-    @$el.val(text_array.join(''))
+  insert: (textArray, insertText, pos = @currentPos()) ->
+    textArray.splice(pos, 0, insertText)
+    @$el.val(textArray.join(''))
 
-    pos += insert_text.length
+    pos += insertText.length
     @el.setSelectionRange(pos, pos)
 
-  current_pos: ->
+  currentPos: ->
     @$el.caret('pos')
 
-$.fn.markdownEditor = (options = {}) ->
-  options = $.extend
-    tabSize: 2
-    onInsertedList: null
-  , options
+$.fn.markdownEditor = (options = {}, args = undefined) ->
+  if typeof options == 'string'
+    @each ->
+      $(@).data('markdownEditor')[options]?(args)
+  else
+    options = $.extend
+      tabSize: 2
+      onInsertedList: null
+    , options
 
-  @each ->
-    $(@).data('markdownEditor', new MarkdownEditor(@, options))
+    @each ->
+      $(@).data('markdownEditor', new MarkdownEditor(@, options))
 
-  @
+    @
