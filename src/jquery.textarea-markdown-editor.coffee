@@ -38,12 +38,18 @@ class MarkdownEditor
 
   get_current_line: (text_array) ->
     pos = @current_pos() - 1
-    current_line = ''
+    before_chars = ''
     while text_array[pos] && text_array[pos] != "\n"
-      current_line = "#{text_array[pos]}#{current_line}"
+      before_chars = "#{text_array[pos]}#{before_chars}"
       pos--
 
-    current_line
+    pos = @current_pos()
+    after_chars = ''
+    while text_array[pos] && text_array[pos] != "\n"
+      after_chars = "#{after_chars}#{text_array[pos]}"
+      pos++
+
+    "#{before_chars}#{after_chars}"
 
   remove_current_line: (text_array) ->
     end_pos = @current_pos()

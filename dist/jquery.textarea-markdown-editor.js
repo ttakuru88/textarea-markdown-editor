@@ -50,14 +50,20 @@
     };
 
     MarkdownEditor.prototype.get_current_line = function(text_array) {
-      var current_line, pos;
+      var after_chars, before_chars, pos;
       pos = this.current_pos() - 1;
-      current_line = '';
+      before_chars = '';
       while (text_array[pos] && text_array[pos] !== "\n") {
-        current_line = "" + text_array[pos] + current_line;
+        before_chars = "" + text_array[pos] + before_chars;
         pos--;
       }
-      return current_line;
+      pos = this.current_pos();
+      after_chars = '';
+      while (text_array[pos] && text_array[pos] !== "\n") {
+        after_chars = "" + after_chars + text_array[pos];
+        pos++;
+      }
+      return "" + before_chars + after_chars;
     };
 
     MarkdownEditor.prototype.remove_current_line = function(text_array) {
