@@ -8,11 +8,15 @@
   };
 
   MarkdownEditor = (function() {
-    var hrFormat, listFormat;
+    var hrFormat, listFormat, rowFormat, rowSepFormat;
 
     listFormat = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/;
 
     hrFormat = /^\s*((-\s+-\s+-(\s+-)*)|(\*\s+\*\s+\*(\s+\*)*))\s*$/;
+
+    rowFormat = /^\|(.*?\|)+\s*$/;
+
+    rowSepFormat = /^\|(\s*---+\s*\|)+\s*$/;
 
     function MarkdownEditor(el, options1) {
       var i, j, ref;
@@ -28,6 +32,9 @@
         return function(e) {
           if (_this.options.list) {
             _this.supportInputListFormat(e);
+          }
+          if (_this.options.table) {
+            _this.supportInputTableFormat(e);
           }
           if (_this.options.tabToSpace) {
             return _this.tabToSpace(e);
@@ -64,12 +71,84 @@
       return typeof (base = this.options).onInsertedList === "function" ? base.onInsertedList(e) : void 0;
     };
 
-    MarkdownEditor.prototype.getCurrentLine = function(textArray) {
-      var afterChars, beforeChars, pos;
+    MarkdownEditor.prototype.supportInputTableFormat = function(e) {
+      var char, currentLine, i, j, k, l, len, match, ref, ref1, row, rows, sep, text;
+      if (e.keyCode !== KeyCodes.enter || e.shiftKey) {
+        return;
+      }
+      text = this.getTextArray();
+      currentLine = this.getCurrentLine(text);
+      match = currentLine.match(rowFormat);
+      if (!match) {
+        return;
+      }
+      rows = -1;
+      for (j = 0, len = currentLine.length; j < len; j++) {
+        char = currentLine[j];
+        if (char === '|') {
+          rows++;
+        }
+      }
+      sep = '';
+      if (!this.isTableBody(text)) {
+        sep = "\n|";
+        for (i = k = 0, ref = rows; 0 <= ref ? k < ref : k > ref; i = 0 <= ref ? ++k : --k) {
+          sep += ' --- |';
+        }
+      }
+      row = "\n|";
+      for (i = l = 0, ref1 = rows; 0 <= ref1 ? l < ref1 : l > ref1; i = 0 <= ref1 ? ++l : --l) {
+        row += '  |';
+      }
+      return this.insert(text, sep + row);
+    };
+
+    MarkdownEditor.prototype.isTableBody = function(textArray, pos) {
+      var line;
+      if (pos == null) {
+        pos = this.currentPos() - 1;
+      }
+      line = this.getCurrentLine(textArray, pos);
+      while (line.match(rowFormat) && pos > 0) {
+        if (line.match(rowSepFormat)) {
+          return true;
+        }
+        pos = this.getPosBeginningOfLine(textArray, pos) - 2;
+        line = this.getCurrentLine(textArray, pos);
+      }
+      return false;
+    };
+
+    MarkdownEditor.prototype.getPrevLine = function(textArray, pos) {
+      if (pos == null) {
+        pos = this.currentPos() - 1;
+      }
+      pos = this.getPosBeginningOfLine(textArray, pos);
+      return this.getCurrentLine(textArray, pos - 2);
+    };
+
+    MarkdownEditor.prototype.getPosEndOfLine = function(textArray, pos) {
+      while (textArray[pos] && textArray[pos] !== "\n") {
+        pos++;
+      }
+      return pos;
+    };
+
+    MarkdownEditor.prototype.getPosBeginningOfLine = function(textArray, pos) {
+      while (textArray[pos - 1] && textArray[pos - 1] !== "\n") {
+        pos--;
+      }
+      return pos;
+    };
+
+    MarkdownEditor.prototype.getCurrentLine = function(textArray, pos) {
+      var afterChars, beforeChars;
       if (textArray == null) {
         textArray = this.getTextArray();
       }
-      pos = this.currentPos() - 1;
+      if (pos == null) {
+        pos = this.currentPos() - 1;
+      }
       beforeChars = '';
       while (textArray[pos] && textArray[pos] !== "\n") {
         beforeChars = "" + textArray[pos] + beforeChars;
@@ -175,7 +254,8 @@
         tabSize: 2,
         onInsertedList: null,
         tabToSpace: true,
-        list: true
+        list: true,
+        table: true
       }, options);
       this.each(function() {
         return $(this).data('markdownEditor', new MarkdownEditor(this, options));

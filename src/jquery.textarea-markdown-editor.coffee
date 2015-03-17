@@ -3,8 +3,10 @@ KeyCodes =
   enter: 13
 
 class MarkdownEditor
-  listFormat = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/
-  hrFormat = /^\s*((-\s+-\s+-(\s+-)*)|(\*\s+\*\s+\*(\s+\*)*))\s*$/
+  listFormat   = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/
+  hrFormat     = /^\s*((-\s+-\s+-(\s+-)*)|(\*\s+\*\s+\*(\s+\*)*))\s*$/
+  rowFormat    = /^\|(.*?\|)+\s*$/
+  rowSepFormat = /^\|(\s*---+\s*\|)+\s*$/
 
   constructor: (@el, @options) ->
     @$el = $(@el)
@@ -14,6 +16,7 @@ class MarkdownEditor
 
     @$el.on 'keydown', (e) =>
       @supportInputListFormat(e) if @options.list
+      @supportInputTableFormat(e) if @options.table
       @tabToSpace(e) if @options.tabToSpace
 
   getTextArray: ->
@@ -28,7 +31,7 @@ class MarkdownEditor
     return if currentLine.match(hrFormat)
 
     match = currentLine.match(listFormat)
-    return if !match
+    return unless match
     if match[5].length <= 0
       @removeCurrentLine(text)
       return
@@ -41,8 +44,52 @@ class MarkdownEditor
 
     @options.onInsertedList?(e)
 
-  getCurrentLine: (textArray = @getTextArray()) ->
-    pos = @currentPos() - 1
+  supportInputTableFormat: (e) ->
+    return if e.keyCode != KeyCodes.enter || e.shiftKey
+
+    text = @getTextArray()
+    currentLine = @getCurrentLine(text)
+    match = currentLine.match(rowFormat)
+    return unless match
+
+    rows = -1
+    for char in currentLine
+      rows++ if char == '|'
+
+    sep = ''
+    unless @isTableBody(text)
+      sep = "\n|"
+      for i in [0...rows]
+        sep += ' --- |'
+
+    row = "\n|"
+    for i in [0...rows]
+      row += '  |'
+
+    @insert(text, sep + row)
+
+  isTableBody: (textArray, pos = @currentPos() - 1) ->
+    line = @getCurrentLine(textArray, pos)
+    while line.match(rowFormat) && pos > 0
+      return true if line.match(rowSepFormat)
+      pos = @getPosBeginningOfLine(textArray, pos) - 2
+      line = @getCurrentLine(textArray, pos)
+
+    false
+
+  getPrevLine: (textArray, pos = @currentPos() - 1) ->
+    pos = @getPosBeginningOfLine(textArray, pos)
+    @getCurrentLine(textArray, pos - 2)
+
+  getPosEndOfLine: (textArray, pos) ->
+    pos++ while textArray[pos] && textArray[pos] != "\n"
+    pos
+
+  getPosBeginningOfLine: (textArray, pos) ->
+    pos-- while textArray[pos-1] && textArray[pos-1] != "\n"
+    pos
+
+  getCurrentLine: (textArray = @getTextArray(), pos = @currentPos() - 1) ->
     beforeChars = ''
     while textArray[pos] && textArray[pos] != "\n"
       beforeChars = "#{textArray[pos]}#{beforeChars}"
@@ -119,6 +166,7 @@ $.fn.markdownEditor = (options = {}, args = undefined) ->
       onInsertedList: null
       tabToSpace: true
       list: true
+      table: true
     , options
 
     @each ->
