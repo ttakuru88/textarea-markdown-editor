@@ -4,7 +4,7 @@ KeyCodes =
 
 class MarkdownEditor
   listFormat = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/
-  hrFormat = /^\s*-\s+-\s+-(\s+-)*\s*$/
+  hrFormat = /^\s*((-\s+-\s+-(\s+-)*)|(\*\s+\*\s+\*(\s+\*)*))\s*$/
 
   constructor: (@el, @options) ->
     @$el = $(@el)

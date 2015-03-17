@@ -12,7 +12,7 @@
 
     listFormat = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/;
 
-    hrFormat = /^\s*-\s+-\s+-(\s+-)*\s*$/;
+    hrFormat = /^\s*((-\s+-\s+-(\s+-)*)|(\*\s+\*\s+\*(\s+\*)*))\s*$/;
 
     function MarkdownEditor(el, options1) {
       var i, j, ref;
