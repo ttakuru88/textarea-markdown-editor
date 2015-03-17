@@ -72,7 +72,7 @@
     };
 
     MarkdownEditor.prototype.supportInputTableFormat = function(e) {
-      var char, currentLine, i, j, k, l, len, match, ref, ref1, row, rows, sep, text;
+      var char, currentLine, i, j, k, l, len, match, pos, prevPos, ref, ref1, row, rows, sep, text;
       if (e.keyCode !== KeyCodes.enter || e.shiftKey) {
         return;
       }
@@ -82,6 +82,7 @@
       if (!match) {
         return;
       }
+      e.preventDefault();
       rows = -1;
       for (j = 0, len = currentLine.length; j < len; j++) {
         char = currentLine[j];
@@ -100,7 +101,10 @@
       for (i = l = 0, ref1 = rows; 0 <= ref1 ? l < ref1 : l > ref1; i = 0 <= ref1 ? ++l : --l) {
         row += '  |';
       }
-      return this.insert(text, sep + row);
+      prevPos = this.currentPos();
+      text = this.insert(text, sep + row);
+      pos = prevPos + sep.length + row.length - rows * 2 - 1;
+      return this.el.setSelectionRange(pos, pos);
     };
 
     MarkdownEditor.prototype.isTableBody = function(textArray, pos) {

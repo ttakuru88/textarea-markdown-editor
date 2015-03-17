@@ -51,6 +51,7 @@ class MarkdownEditor
     currentLine = @getCurrentLine(text)
     match = currentLine.match(rowFormat)
     return unless match
+    e.preventDefault()
 
     rows = -1
     for char in currentLine
@@ -66,7 +67,11 @@ class MarkdownEditor
     for i in [0...rows]
       row += '  |'
 
-    @insert(text, sep + row)
+    prevPos = @currentPos()
+    text = @insert(text, sep + row)
+
+    pos = prevPos + sep.length + row.length - rows * 2 - 1
+    @el.setSelectionRange(pos, pos)
 
   isTableBody: (textArray, pos = @currentPos() - 1) ->
     line = @getCurrentLine(textArray, pos)
