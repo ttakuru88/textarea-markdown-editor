@@ -44,3 +44,9 @@ describe 'Support list input', ->
 
       it 'get second line', ->
         expect(action()).to.eql secondLine
+
+    context 'cusor on second char of second line', ->
+      beforeEach -> cursorPos = firstLine.length + 2
+
+      it 'get second line', ->
+        expect(action()).to.eql secondLine

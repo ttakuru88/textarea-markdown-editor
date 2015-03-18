@@ -6,7 +6,7 @@ class MarkdownEditor
   listFormat   = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/
   hrFormat     = /^\s*((-\s+-\s+-(\s+-)*)|(\*\s+\*\s+\*(\s+\*)*))\s*$/
   rowFormat    = /^\|(.*?\|)+\s*$/
-  rowSepFormat = /^\|(\s*---+\s*\|)+\s*$/
+  rowSepFormat = /^\|(\s*:?---+:?\s*\|)+\s*$/
 
   constructor: (@el, @options) ->
     @$el = $(@el)
@@ -57,8 +57,9 @@ class MarkdownEditor
     for char in currentLine
       rows++ if char == '|'
 
+    prevPos = @getPosEndOfLine(text)
     sep = ''
-    unless @isTableBody(text)
+    unless @isTableBody(text)#, prevPos)
       sep = "\n|"
       for i in [0...rows]
         sep += ' --- |'
@@ -67,8 +68,7 @@ class MarkdownEditor
     for i in [0...rows]
       row += '  |'
 
-    prevPos = @currentPos()
-    text = @insert(text, sep + row)
+    text = @insert(text, sep + row, prevPos)
 
     pos = prevPos + sep.length + row.length - rows * 2 - 1
     @el.setSelectionRange(pos, pos)
@@ -86,7 +86,7 @@ class MarkdownEditor
     pos = @getPosBeginningOfLine(textArray, pos)
     @getCurrentLine(textArray, pos - 2)
 
-  getPosEndOfLine: (textArray, pos) ->
+  getPosEndOfLine: (textArray, pos = @currentPos()) ->
     pos++ while textArray[pos] && textArray[pos] != "\n"
     pos
 
@@ -95,12 +95,14 @@ class MarkdownEditor
     pos
 
   getCurrentLine: (textArray = @getTextArray(), pos = @currentPos() - 1) ->
+    initPos = pos
+
     beforeChars = ''
     while textArray[pos] && textArray[pos] != "\n"
       beforeChars = "#{textArray[pos]}#{beforeChars}"
       pos--
 
-    pos = @currentPos()
+    pos = initPos + 1
     afterChars = ''
     while textArray[pos] && textArray[pos] != "\n"
       afterChars = "#{afterChars}#{textArray[pos]}"

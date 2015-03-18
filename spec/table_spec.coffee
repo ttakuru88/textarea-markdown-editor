@@ -2,6 +2,7 @@ describe 'Support table input', ->
     textarea = null
     action = null
     line = null
+    currentPos = null
 
     beforeEach ->
       textarea = $('<textarea>').markdownEditor()
@@ -11,9 +12,15 @@ describe 'Support table input', ->
       action = ->
         textarea.val(line)
         textarea.data('markdownEditor').currentPos = ->
-          line.length
+          currentPos || line.length
 
         textarea.trigger(downEvent).trigger(enterEvent)
+
+    afterEach ->
+      textarea = null
+      action = null
+      line = null
+      currentPos = null
 
     context 'start with "|a|b|"', ->
       beforeEach -> line = '|a|b|'
@@ -28,3 +35,12 @@ describe 'Support table input', ->
       it 'insert row only', ->
         action()
         expect(textarea.val()).to.eql "|a|b|\n|---|---|\n| | |\n|  |  |"
+
+    context 'cursor on first cell', ->
+      beforeEach ->
+        currentPos = 1
+        line = '|a|b|'
+
+      it 'insert sep and row', ->
+        action()
+        expect(textarea.val()).to.eql "|a|b|\n| --- | --- |\n|  |  |"
