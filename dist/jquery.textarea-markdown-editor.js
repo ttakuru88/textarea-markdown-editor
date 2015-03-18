@@ -109,7 +109,7 @@
         row += '  |';
       }
       text = this.insert(text, sep + row, prevPos);
-      pos = prevPos + sep.length + row.length - rows * 2 - 1;
+      pos = prevPos + sep.length + row.length - rows * 3 + 1;
       return this.el.setSelectionRange(pos, pos);
     };
 

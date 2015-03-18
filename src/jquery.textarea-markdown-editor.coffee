@@ -75,7 +75,7 @@ class MarkdownEditor
 
     text = @insert(text, sep + row, prevPos)
 
-    pos = prevPos + sep.length + row.length - rows * 2 - 1
+    pos = prevPos + sep.length + row.length - rows * 3 + 1
     @el.setSelectionRange(pos, pos)
 
   isTableBody: (textArray, pos = @currentPos() - 1) ->
