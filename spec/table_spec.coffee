@@ -30,11 +30,11 @@ describe 'Support table input', ->
         expect(textarea.val()).to.eql "|a|b|\n| --- | --- |\n|  |  |"
 
     context 'in table', ->
-      beforeEach -> line = "|a|b|\n|---|---|\n| | |"
+      beforeEach -> line = "|a|b|\n|---|---|\n|aa|bb|"
 
       it 'insert row only', ->
         action()
-        expect(textarea.val()).to.eql "|a|b|\n|---|---|\n| | |\n|  |  |"
+        expect(textarea.val()).to.eql "|a|b|\n|---|---|\n|aa|bb|\n|  |  |"
 
     context 'cursor on first cell', ->
       beforeEach ->
@@ -44,3 +44,12 @@ describe 'Support table input', ->
       it 'insert sep and row', ->
         action()
         expect(textarea.val()).to.eql "|a|b|\n| --- | --- |\n|  |  |"
+
+    context 'new line on empty row', ->
+      beforeEach ->
+        currentPos = 18
+        line = "|a|b|\n|---|---|\n| | |"
+
+      it 'remove current line', ->
+        action()
+        expect(textarea.val()).to.eql "|a|b|\n|---|---|\n"

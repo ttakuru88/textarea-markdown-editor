@@ -3,10 +3,11 @@ KeyCodes =
   enter: 13
 
 class MarkdownEditor
-  listFormat   = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/
-  hrFormat     = /^\s*((-\s+-\s+-(\s+-)*)|(\*\s+\*\s+\*(\s+\*)*))\s*$/
-  rowFormat    = /^\|(.*?\|)+\s*$/
-  rowSepFormat = /^\|(\s*:?---+:?\s*\|)+\s*$/
+  listFormat     = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/
+  hrFormat       = /^\s*((-\s+-\s+-(\s+-)*)|(\*\s+\*\s+\*(\s+\*)*))\s*$/
+  rowFormat      = /^\|(.*?\|)+\s*$/
+  rowSepFormat   = /^\|(\s*:?---+:?\s*\|)+\s*$/
+  emptyRowFormat = /^\|(\s*?\|)+\s*$/
 
   constructor: (@el, @options) ->
     @$el = $(@el)
@@ -51,6 +52,10 @@ class MarkdownEditor
     currentLine = @getCurrentLine(text)
     match = currentLine.match(rowFormat)
     return unless match
+    if currentLine.match(emptyRowFormat)
+      @removeCurrentLine(text)
+      return
+
     e.preventDefault()
 
     rows = -1
@@ -90,7 +95,7 @@ class MarkdownEditor
     pos++ while textArray[pos] && textArray[pos] != "\n"
     pos
 
-  getPosBeginningOfLine: (textArray, pos) ->
+  getPosBeginningOfLine: (textArray, pos = @currentPos()) ->
     pos-- while textArray[pos-1] && textArray[pos-1] != "\n"
     pos
 
@@ -111,8 +116,8 @@ class MarkdownEditor
     "#{beforeChars}#{afterChars}"
 
   removeCurrentLine: (textArray) ->
-    endPos = @currentPos()
-    beginPos = @getHeadPos(textArray, endPos)
+    endPos   = @getPosEndOfLine(textArray)
+    beginPos = @getPosBeginningOfLine(textArray)
 
     removeLength = endPos - beginPos
     textArray.splice(beginPos, removeLength)
@@ -127,7 +132,7 @@ class MarkdownEditor
     text = @getTextArray()
     currentLine = @getCurrentLine(text)
     if currentLine.match(listFormat)
-      pos = @getHeadPos(text)
+      pos = @getPosBeginningOfLine(text)
 
       if e.shiftKey
         @removeSpaces(text, pos) if currentLine.indexOf(@tabSpaces) == 0
@@ -148,10 +153,6 @@ class MarkdownEditor
 
     @$el.val(text.join(''))
     @el.setSelectionRange(pos, pos)
-
-  getHeadPos: (textArray, pos = @currentPos()) ->
-    pos-- while pos > 0 && textArray[pos-1] != "\n"
-    pos
 
   insert: (textArray, insertText, pos = @currentPos()) ->
     textArray.splice(pos, 0, insertText)

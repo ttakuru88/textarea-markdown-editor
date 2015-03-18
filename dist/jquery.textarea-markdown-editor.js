@@ -8,7 +8,7 @@
   };
 
   MarkdownEditor = (function() {
-    var hrFormat, listFormat, rowFormat, rowSepFormat;
+    var emptyRowFormat, hrFormat, listFormat, rowFormat, rowSepFormat;
 
     listFormat = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/;
 
@@ -17,6 +17,8 @@
     rowFormat = /^\|(.*?\|)+\s*$/;
 
     rowSepFormat = /^\|(\s*:?---+:?\s*\|)+\s*$/;
+
+    emptyRowFormat = /^\|(\s*?\|)+\s*$/;
 
     function MarkdownEditor(el, options1) {
       var i, j, ref;
@@ -82,6 +84,10 @@
       if (!match) {
         return;
       }
+      if (currentLine.match(emptyRowFormat)) {
+        this.removeCurrentLine(text);
+        return;
+      }
       e.preventDefault();
       rows = -1;
       for (j = 0, len = currentLine.length; j < len; j++) {
@@ -142,6 +148,9 @@
     };
 
     MarkdownEditor.prototype.getPosBeginningOfLine = function(textArray, pos) {
+      if (pos == null) {
+        pos = this.currentPos();
+      }
       while (textArray[pos - 1] && textArray[pos - 1] !== "\n") {
         pos--;
       }
@@ -173,8 +182,8 @@
 
     MarkdownEditor.prototype.removeCurrentLine = function(textArray) {
       var beginPos, endPos, removeLength;
-      endPos = this.currentPos();
-      beginPos = this.getHeadPos(textArray, endPos);
+      endPos = this.getPosEndOfLine(textArray);
+      beginPos = this.getPosBeginningOfLine(textArray);
       removeLength = endPos - beginPos;
       textArray.splice(beginPos, removeLength);
       this.$el.val(textArray.join(''));
@@ -190,7 +199,7 @@
       text = this.getTextArray();
       currentLine = this.getCurrentLine(text);
       if (currentLine.match(listFormat)) {
-        pos = this.getHeadPos(text);
+        pos = this.getPosBeginningOfLine(text);
         if (e.shiftKey) {
           if (currentLine.indexOf(this.tabSpaces) === 0) {
             return this.removeSpaces(text, pos);
@@ -215,16 +224,6 @@
       pos = this.currentPos() - this.tabSpaces.length;
       this.$el.val(text.join(''));
       return this.el.setSelectionRange(pos, pos);
-    };
-
-    MarkdownEditor.prototype.getHeadPos = function(textArray, pos) {
-      if (pos == null) {
-        pos = this.currentPos();
-      }
-      while (pos > 0 && textArray[pos - 1] !== "\n") {
-        pos--;
-      }
-      return pos;
     };
 
     MarkdownEditor.prototype.insert = function(textArray, insertText, pos) {
