@@ -15,7 +15,7 @@ class MarkdownEditor
     @tabSpaces = ''
     @tabSpaces += ' ' for i in [0...@options.tabSize]
 
-    @$el.on 'keydown', (e) =>
+    @$el.on 'keydown.markdownEditor', (e) =>
       @supportInputListFormat(e) if @options.list
       @supportInputTableFormat(e) if @options.table
       @tabToSpace(e) if @options.tabToSpace
@@ -163,6 +163,10 @@ class MarkdownEditor
 
   currentPos: ->
     @$el.caret('pos')
+
+  destroy: ->
+    @$el.off('keydown.markdownEditor').data('markdownEditor', null)
+    @$el = null
 
 $.fn.markdownEditor = (options = {}, args = undefined) ->
   if typeof options == 'string'

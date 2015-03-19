@@ -30,7 +30,7 @@
       for (i = j = 0, ref = this.options.tabSize; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
         this.tabSpaces += ' ';
       }
-      this.$el.on('keydown', (function(_this) {
+      this.$el.on('keydown.markdownEditor', (function(_this) {
         return function(e) {
           if (_this.options.list) {
             _this.supportInputListFormat(e);
@@ -238,6 +238,11 @@
 
     MarkdownEditor.prototype.currentPos = function() {
       return this.$el.caret('pos');
+    };
+
+    MarkdownEditor.prototype.destroy = function() {
+      this.$el.off('keydown.markdownEditor').data('markdownEditor', null);
+      return this.$el = null;
     };
 
     return MarkdownEditor;
