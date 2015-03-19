@@ -18,7 +18,7 @@ class MarkdownEditor
     @$el.on 'keydown.markdownEditor', (e) =>
       @supportInputListFormat(e) if @options.list
       @supportInputTableFormat(e) if @options.table
-      @tabToSpace(e) if @options.tabToSpace
+      @tabToSpace(e)
 
   getTextArray: ->
     @$el.val().split('')
@@ -78,7 +78,7 @@ class MarkdownEditor
     pos = prevPos + sep.length + row.length - rows * 3 + 1
     @el.setSelectionRange(pos, pos)
 
-  isTableBody: (textArray, pos = @currentPos() - 1) ->
+  isTableBody: (textArray = @getTextArray(), pos = @currentPos() - 1) ->
     line = @getCurrentLine(textArray, pos)
     while line.match(rowFormat) && pos > 0
       return true if line.match(rowSepFormat)
@@ -123,7 +123,7 @@ class MarkdownEditor
     textArray.splice(beginPos, removeLength)
 
     @$el.val(textArray.join(''))
-    @el.setSelectionRange(beginPos , beginPos)
+    @el.setSelectionRange(beginPos, beginPos)
 
   tabToSpace: (e) =>
     return if e.keyCode != KeyCodes.tab
@@ -131,15 +131,47 @@ class MarkdownEditor
 
     text = @getTextArray()
     currentLine = @getCurrentLine(text)
-    if currentLine.match(listFormat)
-      pos = @getPosBeginningOfLine(text)
 
-      if e.shiftKey
-        @removeSpaces(text, pos) if currentLine.indexOf(@tabSpaces) == 0
+    if @options.table && currentLine.match(rowFormat)
+      @moveToNextCell(text)
+    else if @options.tabToSpace
+      if currentLine.match(listFormat)
+        pos = @getPosBeginningOfLine(text)
+
+        if e.shiftKey
+          @removeSpaces(text, pos) if currentLine.indexOf(@tabSpaces) == 0
+        else
+          @insertSpaces(text, pos)
       else
-        @insertSpaces(text, pos)
-    else
-      @insert(text, @tabSpaces)
+        @insert(text, @tabSpaces)
+
+  moveToNextCell: (text, pos = @currentPos()) ->
+    overSep = false
+    overSepSpace = false
+    sp = pos
+    while text[sp]
+      return false if sp > 0 && text[sp-1] == "\n" && text[sp] != '|'
+
+      if !overSep
+        if text[sp] == '|'
+          overSep = true
+      else if text[sp] != ' '
+        if text[sp] == "\n"
+          overSep = false
+        else
+          break
+      else
+        break if overSepSpace
+        overSepSpace = true
+      sp++
+
+    eep = ep = sp
+    while text[ep] && text[ep] != '|'
+      eep = ep + 1 if text[ep] != ' '
+      ep++
+
+    @el.setSelectionRange(sp, eep)
+    true
 
   insertSpaces: (text, pos) ->
     nextPos = @currentPos() + @tabSpaces.length

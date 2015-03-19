@@ -38,9 +38,7 @@
           if (_this.options.table) {
             _this.supportInputTableFormat(e);
           }
-          if (_this.options.tabToSpace) {
-            return _this.tabToSpace(e);
-          }
+          return _this.tabToSpace(e);
         };
       })(this));
     }
@@ -115,6 +113,9 @@
 
     MarkdownEditor.prototype.isTableBody = function(textArray, pos) {
       var line;
+      if (textArray == null) {
+        textArray = this.getTextArray();
+      }
       if (pos == null) {
         pos = this.currentPos() - 1;
       }
@@ -198,18 +199,63 @@
       e.preventDefault();
       text = this.getTextArray();
       currentLine = this.getCurrentLine(text);
-      if (currentLine.match(listFormat)) {
-        pos = this.getPosBeginningOfLine(text);
-        if (e.shiftKey) {
-          if (currentLine.indexOf(this.tabSpaces) === 0) {
-            return this.removeSpaces(text, pos);
+      if (this.options.table && currentLine.match(rowFormat)) {
+        return this.moveToNextCell(text);
+      } else if (this.options.tabToSpace) {
+        if (currentLine.match(listFormat)) {
+          pos = this.getPosBeginningOfLine(text);
+          if (e.shiftKey) {
+            if (currentLine.indexOf(this.tabSpaces) === 0) {
+              return this.removeSpaces(text, pos);
+            }
+          } else {
+            return this.insertSpaces(text, pos);
           }
         } else {
-          return this.insertSpaces(text, pos);
+          return this.insert(text, this.tabSpaces);
         }
-      } else {
-        return this.insert(text, this.tabSpaces);
       }
+    };
+
+    MarkdownEditor.prototype.moveToNextCell = function(text, pos) {
+      var eep, ep, overSep, overSepSpace, sp;
+      if (pos == null) {
+        pos = this.currentPos();
+      }
+      overSep = false;
+      overSepSpace = false;
+      sp = pos;
+      while (text[sp]) {
+        if (sp > 0 && text[sp - 1] === "\n" && text[sp] !== '|') {
+          return false;
+        }
+        if (!overSep) {
+          if (text[sp] === '|') {
+            overSep = true;
+          }
+        } else if (text[sp] !== ' ') {
+          if (text[sp] === "\n") {
+            overSep = false;
+          } else {
+            break;
+          }
+        } else {
+          if (overSepSpace) {
+            break;
+          }
+          overSepSpace = true;
+        }
+        sp++;
+      }
+      eep = ep = sp;
+      while (text[ep] && text[ep] !== '|') {
+        if (text[ep] !== ' ') {
+          eep = ep + 1;
+        }
+        ep++;
+      }
+      this.el.setSelectionRange(sp, eep);
+      return true;
     };
 
     MarkdownEditor.prototype.insertSpaces = function(text, pos) {
