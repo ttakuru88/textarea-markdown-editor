@@ -52,7 +52,7 @@ class MarkdownEditor
     currentLine = @getCurrentLine(text)
     match = currentLine.match(rowFormat)
     return unless match
-    if currentLine.match(emptyRowFormat)
+    if currentLine.match(emptyRowFormat) && @isTableBody(text)
       @removeCurrentLine(text)
       return
 
@@ -64,7 +64,7 @@ class MarkdownEditor
 
     prevPos = @getPosEndOfLine(text)
     sep = ''
-    unless @isTableBody(text)#, prevPos)
+    unless @isTableBody(text)
       sep = "\n|"
       for i in [0...rows]
         sep += ' --- |'

@@ -82,7 +82,7 @@
       if (!match) {
         return;
       }
-      if (currentLine.match(emptyRowFormat)) {
+      if (currentLine.match(emptyRowFormat) && this.isTableBody(text)) {
         this.removeCurrentLine(text);
         return;
       }
