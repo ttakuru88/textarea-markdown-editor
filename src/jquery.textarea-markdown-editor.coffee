@@ -133,7 +133,10 @@ class MarkdownEditor
     currentLine = @getCurrentLine(text)
 
     if @options.table && currentLine.match(rowFormat)
-      @moveToNextCell(text)
+      if e.shiftKey
+        @moveToPrevCell(text)
+      else
+        @moveToNextCell(text)
     else if @options.tabToSpace
       if currentLine.match(listFormat)
         pos = @getPosBeginningOfLine(text)
@@ -144,6 +147,37 @@ class MarkdownEditor
           @insertSpaces(text, pos)
       else
         @insert(text, @tabSpaces)
+
+  moveToPrevCell: (text, pos = @currentPos()) ->
+    overSep = false
+    ep = pos
+    while text[ep]
+      return false if ep <= 0
+
+      if !overSep
+        if text[ep] == '|'
+          overSep = true
+      else if text[ep] != ' '
+        if text[ep] == "\n"
+          overSep = false
+        else
+          ep++ if text[ep] == '|'
+          ep++ if text[ep] == ' '
+          break
+      ep--
+
+    ssp = sp = ep
+    epAdded = false
+    while text[sp] && text[sp] != '|'
+      if text[sp] != ' '
+        ssp = sp
+        unless epAdded
+          ep++
+          epAdded = true
+      sp--
+
+    @el.setSelectionRange(ssp, ep)
+    true
 
   moveToNextCell: (text, pos = @currentPos()) ->
     overSep = false

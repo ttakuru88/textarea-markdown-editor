@@ -200,7 +200,11 @@
       text = this.getTextArray();
       currentLine = this.getCurrentLine(text);
       if (this.options.table && currentLine.match(rowFormat)) {
-        return this.moveToNextCell(text);
+        if (e.shiftKey) {
+          return this.moveToPrevCell(text);
+        } else {
+          return this.moveToNextCell(text);
+        }
       } else if (this.options.tabToSpace) {
         if (currentLine.match(listFormat)) {
           pos = this.getPosBeginningOfLine(text);
@@ -215,6 +219,52 @@
           return this.insert(text, this.tabSpaces);
         }
       }
+    };
+
+    MarkdownEditor.prototype.moveToPrevCell = function(text, pos) {
+      var ep, epAdded, overSep, sp, ssp;
+      if (pos == null) {
+        pos = this.currentPos();
+      }
+      overSep = false;
+      ep = pos;
+      while (text[ep]) {
+        if (ep <= 0) {
+          return false;
+        }
+        if (!overSep) {
+          if (text[ep] === '|') {
+            overSep = true;
+          }
+        } else if (text[ep] !== ' ') {
+          if (text[ep] === "\n") {
+            overSep = false;
+          } else {
+            if (text[ep] === '|') {
+              ep++;
+            }
+            if (text[ep] === ' ') {
+              ep++;
+            }
+            break;
+          }
+        }
+        ep--;
+      }
+      ssp = sp = ep;
+      epAdded = false;
+      while (text[sp] && text[sp] !== '|') {
+        if (text[sp] !== ' ') {
+          ssp = sp;
+          if (!epAdded) {
+            ep++;
+            epAdded = true;
+          }
+        }
+        sp--;
+      }
+      this.el.setSelectionRange(ssp, ep);
+      return true;
     };
 
     MarkdownEditor.prototype.moveToNextCell = function(text, pos) {
