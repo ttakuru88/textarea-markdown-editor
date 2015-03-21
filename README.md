@@ -1,5 +1,9 @@
 ## jquery.textarea-markdown-editor
 
+## Demo
+
+[Demo](http://hai3.net/textarea-markdown-editor/)
+
 ## Install
 
 via Bower
