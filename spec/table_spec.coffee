@@ -29,6 +29,13 @@ describe 'Support table input', ->
         action()
         expect(textarea.val()).to.eql "|a|b|\n| --- | --- |\n|  |  |"
 
+    context 'start with "|a|b\\|c|"', ->
+      beforeEach -> line = '|a|b\\|c|'
+
+      it 'insert sep and row with 2 columns', ->
+        action()
+        expect(textarea.val()).to.eql "|a|b\\|c|\n| --- | --- |\n|  |  |"
+
     context 'in table', ->
       beforeEach -> line = "|a|b|\n|---|---|\n|aa|bb|"
 

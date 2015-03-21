@@ -44,7 +44,11 @@
     }
 
     MarkdownEditor.prototype.getTextArray = function() {
-      return this.$el.val().split('');
+      return this.getText().split('');
+    };
+
+    MarkdownEditor.prototype.getText = function() {
+      return this.$el.val();
     };
 
     MarkdownEditor.prototype.supportInputListFormat = function(e) {
@@ -77,7 +81,7 @@
         return;
       }
       text = this.getTextArray();
-      currentLine = this.getCurrentLine(text);
+      currentLine = this.replaceEscapedPipe(this.getCurrentLine(text));
       match = currentLine.match(rowFormat);
       if (!match) {
         return;
@@ -111,6 +115,10 @@
       return this.el.setSelectionRange(pos, pos);
     };
 
+    MarkdownEditor.prototype.replaceEscapedPipe = function(text) {
+      return text.replace(/\\\|/g, '..');
+    };
+
     MarkdownEditor.prototype.isTableBody = function(textArray, pos) {
       var line;
       if (textArray == null) {
@@ -119,13 +127,13 @@
       if (pos == null) {
         pos = this.currentPos() - 1;
       }
-      line = this.getCurrentLine(textArray, pos);
+      line = this.replaceEscapedPipe(this.getCurrentLine(textArray, pos));
       while (line.match(rowFormat) && pos > 0) {
         if (line.match(rowSepFormat)) {
           return true;
         }
         pos = this.getPosBeginningOfLine(textArray, pos) - 2;
-        line = this.getCurrentLine(textArray, pos);
+        line = this.replaceEscapedPipe(this.getCurrentLine(textArray, pos));
       }
       return false;
     };
@@ -197,26 +205,32 @@
         return;
       }
       e.preventDefault();
-      text = this.getTextArray();
-      currentLine = this.getCurrentLine(text);
-      if (this.options.table && currentLine.match(rowFormat)) {
-        if (e.shiftKey) {
-          return this.moveToPrevCell(text);
-        } else {
-          return this.moveToNextCell(text);
-        }
-      } else if (this.options.tabToSpace) {
-        if (currentLine.match(listFormat)) {
-          pos = this.getPosBeginningOfLine(text);
+      if (this.options.table) {
+        text = this.replaceEscapedPipe(this.getText());
+        currentLine = this.getCurrentLine(text);
+        if (currentLine.match(rowFormat)) {
           if (e.shiftKey) {
-            if (currentLine.indexOf(this.tabSpaces) === 0) {
-              return this.removeSpaces(text, pos);
+            return this.moveToPrevCell(text);
+          } else {
+            return this.moveToNextCell(text);
+          }
+        }
+      } else {
+        if (this.options.tabToSpace) {
+          text = this.getTextArray();
+          currentLine = this.getCurrentLine(text);
+          if (currentLine.match(listFormat)) {
+            pos = this.getPosBeginningOfLine(text);
+            if (e.shiftKey) {
+              if (currentLine.indexOf(this.tabSpaces) === 0) {
+                return this.removeSpaces(text, pos);
+              }
+            } else {
+              return this.insertSpaces(text, pos);
             }
           } else {
-            return this.insertSpaces(text, pos);
+            return this.insert(text, this.tabSpaces);
           }
-        } else {
-          return this.insert(text, this.tabSpaces);
         }
       }
     };

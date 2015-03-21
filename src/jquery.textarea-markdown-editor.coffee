@@ -21,7 +21,10 @@ class MarkdownEditor
       @tabToSpace(e)
 
   getTextArray: ->
-    @$el.val().split('')
+    @getText().split('')
+
+  getText: ->
+    @$el.val()
 
   supportInputListFormat: (e) ->
     return if e.keyCode != KeyCodes.enter || e.shiftKey
@@ -49,7 +52,7 @@ class MarkdownEditor
     return if e.keyCode != KeyCodes.enter || e.shiftKey
 
     text = @getTextArray()
-    currentLine = @getCurrentLine(text)
+    currentLine = @replaceEscapedPipe @getCurrentLine(text)
     match = currentLine.match(rowFormat)
     return unless match
     if currentLine.match(emptyRowFormat) && @isTableBody(text)
@@ -78,12 +81,15 @@ class MarkdownEditor
     pos = prevPos + sep.length + row.length - rows * 3 + 1
     @el.setSelectionRange(pos, pos)
 
+  replaceEscapedPipe: (text) ->
+    text.replace(/\\\|/g, '..')
+
   isTableBody: (textArray = @getTextArray(), pos = @currentPos() - 1) ->
-    line = @getCurrentLine(textArray, pos)
+    line = @replaceEscapedPipe @getCurrentLine(textArray, pos)
     while line.match(rowFormat) && pos > 0
       return true if line.match(rowSepFormat)
       pos = @getPosBeginningOfLine(textArray, pos) - 2
-      line = @getCurrentLine(textArray, pos)
+      line = @replaceEscapedPipe @getCurrentLine(textArray, pos)
 
     false
 
@@ -129,24 +135,29 @@ class MarkdownEditor
     return if e.keyCode != KeyCodes.tab
     e.preventDefault()
 
-    text = @getTextArray()
-    currentLine = @getCurrentLine(text)
+    if @options.table
+      text = @replaceEscapedPipe(@getText())
+      currentLine = @getCurrentLine(text)
 
-    if @options.table && currentLine.match(rowFormat)
-      if e.shiftKey
-        @moveToPrevCell(text)
-      else
-        @moveToNextCell(text)
-    else if @options.tabToSpace
-      if currentLine.match(listFormat)
-        pos = @getPosBeginningOfLine(text)
-
+      if currentLine.match(rowFormat)
         if e.shiftKey
-          @removeSpaces(text, pos) if currentLine.indexOf(@tabSpaces) == 0
+          @moveToPrevCell(text)
         else
-          @insertSpaces(text, pos)
-      else
-        @insert(text, @tabSpaces)
+          @moveToNextCell(text)
+    else
+      if @options.tabToSpace
+        text = @getTextArray()
+        currentLine = @getCurrentLine(text)
+
+        if currentLine.match(listFormat)
+          pos = @getPosBeginningOfLine(text)
+
+          if e.shiftKey
+            @removeSpaces(text, pos) if currentLine.indexOf(@tabSpaces) == 0
+          else
+            @insertSpaces(text, pos)
+        else
+          @insert(text, @tabSpaces)
 
   moveToPrevCell: (text, pos = @currentPos()) ->
     overSep = false
