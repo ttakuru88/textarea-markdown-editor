@@ -12,6 +12,8 @@ class MarkdownEditor
   constructor: (@el, @options) ->
     @$el = $(@el)
 
+    @selectionBegin = @selectionEnd = 0
+
     @tabSpaces = ''
     @tabSpaces += ' ' for i in [0...@options.tabSize]
 
@@ -79,7 +81,10 @@ class MarkdownEditor
     text = @insert(text, sep + row, prevPos)
 
     pos = prevPos + sep.length + row.length - rows * 3 + 1
-    @el.setSelectionRange(pos, pos)
+    @setSelectionRange(pos, pos)
+
+  setSelectionRange: (@selectionBegin, @selectionEnd) ->
+    @el.setSelectionRange(@selectionBegin, @selectionEnd)
 
   replaceEscapedPipe: (text) ->
     text.replace(/\\\|/g, '..')
@@ -129,7 +134,7 @@ class MarkdownEditor
     textArray.splice(beginPos, removeLength)
 
     @$el.val(textArray.join(''))
-    @el.setSelectionRange(beginPos, beginPos)
+    @setSelectionRange(beginPos, beginPos)
 
   tabToSpace: (e) =>
     return if e.keyCode != KeyCodes.tab
@@ -159,23 +164,29 @@ class MarkdownEditor
         else
           @insert(text, @tabSpaces)
 
-  moveToPrevCell: (text, pos = @currentPos()) ->
+  moveToPrevCell: (text, pos = @currentPos() - 1) ->
     overSep = false
+    prevLine = false
     ep = pos
+
     while text[ep]
-      return false if ep <= 0
+      return false if overSep && ep < 0 || !overSep && ep <= 0
+      return false if prevLine && text[ep] != ' ' && text[ep] != '|'
 
       if !overSep
         if text[ep] == '|'
           overSep = true
+          prevLine = false
       else if text[ep] != ' '
         if text[ep] == "\n"
           overSep = false
+          prevLine = true
         else
           ep++ if text[ep] == '|'
           ep++ if text[ep] == ' '
           break
       ep--
+    return false if ep < 0
 
     ssp = sp = ep
     epAdded = false
@@ -186,8 +197,7 @@ class MarkdownEditor
           ep++
           epAdded = true
       sp--
-
-    @el.setSelectionRange(ssp, ep)
+    @setSelectionRange(ssp, ep)
     true
 
   moveToNextCell: (text, pos = @currentPos()) ->
@@ -215,28 +225,28 @@ class MarkdownEditor
       eep = ep + 1 if text[ep] != ' '
       ep++
 
-    @el.setSelectionRange(sp, eep)
+    @setSelectionRange(sp, eep)
     true
 
   insertSpaces: (text, pos) ->
     nextPos = @currentPos() + @tabSpaces.length
 
     @insert(text, @tabSpaces, pos)
-    @el.setSelectionRange(nextPos, nextPos)
+    @setSelectionRange(nextPos, nextPos)
 
   removeSpaces: (text, pos) ->
     text.splice(pos, @tabSpaces.length)
     pos = @currentPos() - @tabSpaces.length
 
     @$el.val(text.join(''))
-    @el.setSelectionRange(pos, pos)
+    @setSelectionRange(pos, pos)
 
   insert: (textArray, insertText, pos = @currentPos()) ->
     textArray.splice(pos, 0, insertText)
     @$el.val(textArray.join(''))
 
     pos += insertText.length
-    @el.setSelectionRange(pos, pos)
+    @setSelectionRange(pos, pos)
 
   currentPos: ->
     @$el.caret('pos')

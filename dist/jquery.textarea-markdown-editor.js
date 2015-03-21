@@ -26,6 +26,7 @@
       this.options = options1;
       this.tabToSpace = bind(this.tabToSpace, this);
       this.$el = $(this.el);
+      this.selectionBegin = this.selectionEnd = 0;
       this.tabSpaces = '';
       for (i = j = 0, ref = this.options.tabSize; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
         this.tabSpaces += ' ';
@@ -112,7 +113,13 @@
       }
       text = this.insert(text, sep + row, prevPos);
       pos = prevPos + sep.length + row.length - rows * 3 + 1;
-      return this.el.setSelectionRange(pos, pos);
+      return this.setSelectionRange(pos, pos);
+    };
+
+    MarkdownEditor.prototype.setSelectionRange = function(selectionBegin, selectionEnd) {
+      this.selectionBegin = selectionBegin;
+      this.selectionEnd = selectionEnd;
+      return this.el.setSelectionRange(this.selectionBegin, this.selectionEnd);
     };
 
     MarkdownEditor.prototype.replaceEscapedPipe = function(text) {
@@ -196,7 +203,7 @@
       removeLength = endPos - beginPos;
       textArray.splice(beginPos, removeLength);
       this.$el.val(textArray.join(''));
-      return this.el.setSelectionRange(beginPos, beginPos);
+      return this.setSelectionRange(beginPos, beginPos);
     };
 
     MarkdownEditor.prototype.tabToSpace = function(e) {
@@ -236,23 +243,29 @@
     };
 
     MarkdownEditor.prototype.moveToPrevCell = function(text, pos) {
-      var ep, epAdded, overSep, sp, ssp;
+      var ep, epAdded, overSep, prevLine, sp, ssp;
       if (pos == null) {
-        pos = this.currentPos();
+        pos = this.currentPos() - 1;
       }
       overSep = false;
+      prevLine = false;
       ep = pos;
       while (text[ep]) {
-        if (ep <= 0) {
+        if (overSep && ep < 0 || !overSep && ep <= 0) {
+          return false;
+        }
+        if (prevLine && text[ep] !== ' ' && text[ep] !== '|') {
           return false;
         }
         if (!overSep) {
           if (text[ep] === '|') {
             overSep = true;
+            prevLine = false;
           }
         } else if (text[ep] !== ' ') {
           if (text[ep] === "\n") {
             overSep = false;
+            prevLine = true;
           } else {
             if (text[ep] === '|') {
               ep++;
@@ -264,6 +277,9 @@
           }
         }
         ep--;
+      }
+      if (ep < 0) {
+        return false;
       }
       ssp = sp = ep;
       epAdded = false;
@@ -277,7 +293,7 @@
         }
         sp--;
       }
-      this.el.setSelectionRange(ssp, ep);
+      this.setSelectionRange(ssp, ep);
       return true;
     };
 
@@ -318,7 +334,7 @@
         }
         ep++;
       }
-      this.el.setSelectionRange(sp, eep);
+      this.setSelectionRange(sp, eep);
       return true;
     };
 
@@ -326,14 +342,14 @@
       var nextPos;
       nextPos = this.currentPos() + this.tabSpaces.length;
       this.insert(text, this.tabSpaces, pos);
-      return this.el.setSelectionRange(nextPos, nextPos);
+      return this.setSelectionRange(nextPos, nextPos);
     };
 
     MarkdownEditor.prototype.removeSpaces = function(text, pos) {
       text.splice(pos, this.tabSpaces.length);
       pos = this.currentPos() - this.tabSpaces.length;
       this.$el.val(text.join(''));
-      return this.el.setSelectionRange(pos, pos);
+      return this.setSelectionRange(pos, pos);
     };
 
     MarkdownEditor.prototype.insert = function(textArray, insertText, pos) {
@@ -343,7 +359,7 @@
       textArray.splice(pos, 0, insertText);
       this.$el.val(textArray.join(''));
       pos += insertText.length;
-      return this.el.setSelectionRange(pos, pos);
+      return this.setSelectionRange(pos, pos);
     };
 
     MarkdownEditor.prototype.currentPos = function() {

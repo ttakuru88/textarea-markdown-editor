@@ -5,7 +5,6 @@ describe 'Support list input', ->
 
     beforeEach ->
       textarea = $('<textarea>').markdownEditor()
-      downEvent = $.Event('keydown', keyCode: 40)
       enterEvent = $.Event('keydown', keyCode: 13)
 
       action = ->
@@ -13,7 +12,7 @@ describe 'Support list input', ->
         textarea.data('markdownEditor').currentPos = -> # stub
           line.length
 
-        textarea.trigger(downEvent).trigger(enterEvent)
+        textarea.trigger(enterEvent)
 
     context 'empty line', ->
       beforeEach -> line = ''
