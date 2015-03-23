@@ -304,10 +304,13 @@
       }
       overSep = false;
       overSepSpace = false;
+      eep = null;
       sp = pos;
       while (text[sp]) {
         if (sp > 0 && text[sp - 1] === "\n" && text[sp] !== '|') {
-          return false;
+          sp--;
+          eep = sp;
+          break;
         }
         if (!overSep) {
           if (text[sp] === '|') {
@@ -327,12 +330,18 @@
         }
         sp++;
       }
-      eep = ep = sp;
-      while (text[ep] && text[ep] !== '|') {
-        if (text[ep] !== ' ') {
-          eep = ep + 1;
+      if (!text[sp]) {
+        sp--;
+        eep = sp;
+      }
+      if (!eep) {
+        eep = ep = sp;
+        while (text[ep] && text[ep] !== '|') {
+          if (text[ep] !== ' ') {
+            eep = ep + 1;
+          }
+          ep++;
         }
-        ep++;
       }
       this.setSelectionRange(sp, eep);
       return true;

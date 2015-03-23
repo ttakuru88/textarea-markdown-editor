@@ -91,7 +91,7 @@ describe 'Support table input', ->
       beforeEach -> keyCode = 9
 
       context 'normal table', ->
-        beforeEach -> text = "|a|b|\n|---|---|\n| | |"
+        beforeEach -> text = "|a|b|\n|---|---|\n| | |\n"
 
         context 'on line head', ->
           beforeEach -> currentPos = 0
@@ -108,6 +108,14 @@ describe 'Support table input', ->
               action()
               expect(markdownEditor.selectionBegin).to.eql 0
               expect(markdownEditor.selectionEnd).to.eql 0
+
+        context 'on last cell', ->
+          beforeEach -> currentPos = 20
+
+          it 'cursor move to end of row', ->
+            action()
+            expect(markdownEditor.selectionBegin).to.eql 21
+            expect(markdownEditor.selectionEnd).to.eql 21
 
         context 'on first cell', ->
           beforeEach -> currentPos = 1
@@ -202,10 +210,10 @@ describe 'Support table input', ->
         context 'on last cell of first table', ->
           beforeEach -> currentPos = 21
 
-          it 'do nothing', ->
+          it 'move to end of row', ->
             action()
-            expect(markdownEditor.selectionBegin).to.eql 21
-            expect(markdownEditor.selectionEnd).to.eql 21
+            expect(markdownEditor.selectionBegin).to.eql 23
+            expect(markdownEditor.selectionEnd).to.eql 23
 
       context 'escaped pipe', ->
         beforeEach -> text = "| a\\|b | c |\n|---|---|---|\n||| | |"

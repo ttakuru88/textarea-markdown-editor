@@ -203,9 +203,13 @@ class MarkdownEditor
   moveToNextCell: (text, pos = @currentPos()) ->
     overSep = false
     overSepSpace = false
+    eep = null
     sp = pos
     while text[sp]
-      return false if sp > 0 && text[sp-1] == "\n" && text[sp] != '|'
+      if sp > 0 && text[sp-1] == "\n" && text[sp] != '|'
+        sp--
+        eep = sp
+        break
 
       if !overSep
         if text[sp] == '|'
@@ -220,10 +224,15 @@ class MarkdownEditor
         overSepSpace = true
       sp++
 
-    eep = ep = sp
-    while text[ep] && text[ep] != '|'
-      eep = ep + 1 if text[ep] != ' '
-      ep++
+    unless text[sp]
+      sp--
+      eep = sp
+
+    unless eep
+      eep = ep = sp
+      while text[ep] && text[ep] != '|'
+        eep = ep + 1 if text[ep] != ' '
+        ep++
 
     @setSelectionRange(sp, eep)
     true
