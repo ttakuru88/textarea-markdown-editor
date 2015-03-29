@@ -217,27 +217,27 @@
         currentLine = this.getCurrentLine(text);
         if (currentLine.match(rowFormat)) {
           if (e.shiftKey) {
-            return this.moveToPrevCell(text);
+            this.moveToPrevCell(text);
           } else {
-            return this.moveToNextCell(text);
+            this.moveToNextCell(text);
           }
+          return;
         }
-      } else {
-        if (this.options.tabToSpace) {
-          text = this.getTextArray();
-          currentLine = this.getCurrentLine(text);
-          if (currentLine.match(listFormat)) {
-            pos = this.getPosBeginningOfLine(text);
-            if (e.shiftKey) {
-              if (currentLine.indexOf(this.tabSpaces) === 0) {
-                return this.removeSpaces(text, pos);
-              }
-            } else {
-              return this.insertSpaces(text, pos);
+      }
+      if (this.options.tabToSpace) {
+        text = this.getTextArray();
+        currentLine = this.getCurrentLine(text);
+        if (this.options.list && currentLine.match(listFormat)) {
+          pos = this.getPosBeginningOfLine(text);
+          if (e.shiftKey) {
+            if (currentLine.indexOf(this.tabSpaces) === 0) {
+              return this.removeSpaces(text, pos);
             }
           } else {
-            return this.insert(text, this.tabSpaces);
+            return this.insertSpaces(text, pos);
           }
+        } else {
+          return this.insert(text, this.tabSpaces);
         }
       }
     };

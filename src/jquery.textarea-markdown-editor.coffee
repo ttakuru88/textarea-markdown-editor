@@ -149,20 +149,22 @@ class MarkdownEditor
           @moveToPrevCell(text)
         else
           @moveToNextCell(text)
-    else
-      if @options.tabToSpace
-        text = @getTextArray()
-        currentLine = @getCurrentLine(text)
 
-        if currentLine.match(listFormat)
-          pos = @getPosBeginningOfLine(text)
+        return
 
-          if e.shiftKey
-            @removeSpaces(text, pos) if currentLine.indexOf(@tabSpaces) == 0
-          else
-            @insertSpaces(text, pos)
+    if @options.tabToSpace
+      text = @getTextArray()
+      currentLine = @getCurrentLine(text)
+
+      if @options.list && currentLine.match(listFormat)
+        pos = @getPosBeginningOfLine(text)
+
+        if e.shiftKey
+          @removeSpaces(text, pos) if currentLine.indexOf(@tabSpaces) == 0
         else
-          @insert(text, @tabSpaces)
+          @insertSpaces(text, pos)
+      else
+        @insert(text, @tabSpaces)
 
   moveToPrevCell: (text, pos = @currentPos() - 1) ->
     overSep = false

@@ -2,112 +2,134 @@ describe 'Support list input', ->
     textarea = null
     action = null
     line = null
+    keyCode = null
 
     beforeEach ->
       textarea = $('<textarea>').markdownEditor()
-      enterEvent = $.Event('keydown', keyCode: 13)
 
       action = ->
+        enterEvent = $.Event('keydown', keyCode: keyCode)
+
         textarea.val(line)
         textarea.data('markdownEditor').currentPos = -> # stub
           line.length
 
         textarea.trigger(enterEvent)
 
-    context 'empty line', ->
-      beforeEach -> line = ''
+    context 'press tab', ->
+      beforeEach -> keyCode = 9
 
-      it 'do nothing', ->
-        action()
-        expect(textarea.val()).to.eql ''
+      context 'not list line', ->
+        beforeEach -> line = 'aaa'
 
-    context 'chars line', ->
-      beforeEach -> line = 'abc'
+        it 'insert space', ->
+          action()
+          expect(textarea.val()).to.eql 'aaa  '
 
-      it 'do nothing', ->
-        action()
-        expect(textarea.val()).to.eql 'abc'
+      context 'list line', ->
+        beforeEach -> line = '- aaa'
 
-    context 'start with "- - - - -"', ->
-      beforeEach -> line = '- - - - -'
+        it 'inert space at head', ->
+          action()
+          expect(textarea.val()).to.eql '  - aaa'
 
-      it 'do nothing', ->
-        action()
-        expect(textarea.val()).to.eql '- - - - -'
+    context 'press enter', ->
+      beforeEach -> keyCode = 13
 
-    context 'start with "- - - - - a"', ->
-      beforeEach -> line = '- - - - - a'
+      context 'empty line', ->
+        beforeEach -> line = ''
 
-      it 'start with "- " next line', ->
-        action()
-        expect(textarea.val()).to.eql "- - - - - a\n- "
+        it 'do nothing', ->
+          action()
+          expect(textarea.val()).to.eql ''
 
-    context 'start with "* * * * *"', ->
-      beforeEach -> line = '* * * * *'
+      context 'chars line', ->
+        beforeEach -> line = 'abc'
 
-      it 'do nothing', ->
-        action()
-        expect(textarea.val()).to.eql '* * * * *'
+        it 'do nothing', ->
+          action()
+          expect(textarea.val()).to.eql 'abc'
 
-    context 'start with "* * * * * a"', ->
-      beforeEach -> line = '* * * * * a'
+      context 'start with "- - - - -"', ->
+        beforeEach -> line = '- - - - -'
 
-      it 'start with "* " next line', ->
-        action()
-        expect(textarea.val()).to.eql "* * * * * a\n* "
+        it 'do nothing', ->
+          action()
+          expect(textarea.val()).to.eql '- - - - -'
 
-    context 'start with "* * - * *"', ->
-      beforeEach -> line = '* * - * *'
+      context 'start with "- - - - - a"', ->
+        beforeEach -> line = '- - - - - a'
 
-      it 'start with "* " next line', ->
-        action()
-        expect(textarea.val()).to.eql "* * - * *\n* "
+        it 'start with "- " next line', ->
+          action()
+          expect(textarea.val()).to.eql "- - - - - a\n- "
 
-    context 'only "- "', ->
-      beforeEach -> line = '- '
+      context 'start with "* * * * *"', ->
+        beforeEach -> line = '* * * * *'
 
-      it 'delete line', ->
-        action()
-        expect(textarea.val()).to.eql ''
+        it 'do nothing', ->
+          action()
+          expect(textarea.val()).to.eql '* * * * *'
 
-    context 'start with "- "', ->
-      beforeEach -> line = '- abc'
+      context 'start with "* * * * * a"', ->
+        beforeEach -> line = '* * * * * a'
 
-      it 'start with "- " next line', ->
-        action()
-        expect(textarea.val()).to.eql "- abc\n- "
+        it 'start with "* " next line', ->
+          action()
+          expect(textarea.val()).to.eql "* * * * * a\n* "
 
-    context 'start with "* "', ->
-      beforeEach -> line = '* abc'
+      context 'start with "* * - * *"', ->
+        beforeEach -> line = '* * - * *'
 
-      it 'start with "* " next line', ->
-        action()
-        expect(textarea.val()).to.eql "* abc\n* "
+        it 'start with "* " next line', ->
+          action()
+          expect(textarea.val()).to.eql "* * - * *\n* "
 
-    context 'start with "55. "', ->
-      beforeEach -> line = '55. abc'
+      context 'only "- "', ->
+        beforeEach -> line = '- '
 
-      it 'start with "55. " next line', ->
-        action()
-        expect(textarea.val()).to.eql "55. abc\n55. "
+        it 'delete line', ->
+          action()
+          expect(textarea.val()).to.eql ''
 
-    context 'has many spaces', ->
-      beforeEach -> line = '-  abc'
+      context 'start with "- "', ->
+        beforeEach -> line = '- abc'
 
-      it 'keep spaces next line', ->
-        action()
-        expect(textarea.val()).to.eql "-  abc\n-  "
+        it 'start with "- " next line', ->
+          action()
+          expect(textarea.val()).to.eql "- abc\n- "
 
-    context 'start with "- [ ] "', ->
-      beforeEach -> line = '- [ ] abc'
+      context 'start with "* "', ->
+        beforeEach -> line = '* abc'
 
-      it 'start with "- [ ] "', ->
-        action()
-        expect(textarea.val()).to.eql "- [ ] abc\n- [ ] "
+        it 'start with "* " next line', ->
+          action()
+          expect(textarea.val()).to.eql "* abc\n* "
 
-    context 'start with "- [x] "', ->
-      beforeEach -> line = '- [x] abc'
+      context 'start with "55. "', ->
+        beforeEach -> line = '55. abc'
 
-      it 'start with "- [x] "', ->
-        action()
-        expect(textarea.val()).to.eql "- [x] abc\n- [x] "
+        it 'start with "55. " next line', ->
+          action()
+          expect(textarea.val()).to.eql "55. abc\n55. "
+
+      context 'has many spaces', ->
+        beforeEach -> line = '-  abc'
+
+        it 'keep spaces next line', ->
+          action()
+          expect(textarea.val()).to.eql "-  abc\n-  "
+
+      context 'start with "- [ ] "', ->
+        beforeEach -> line = '- [ ] abc'
+
+        it 'start with "- [ ] "', ->
+          action()
+          expect(textarea.val()).to.eql "- [ ] abc\n- [ ] "
+
+      context 'start with "- [x] "', ->
+        beforeEach -> line = '- [x] abc'
+
+        it 'start with "- [x] "', ->
+          action()
+          expect(textarea.val()).to.eql "- [x] abc\n- [x] "
