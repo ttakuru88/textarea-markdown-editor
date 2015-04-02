@@ -53,6 +53,15 @@ describe 'Support table input', ->
         action()
         expect(textarea.val()).to.eql "|a|b\\|c|\n| --- | --- |\n|  |  |"
 
+    context 'in table header', ->
+      beforeEach ->
+        currentPos = 3
+        text = "|a|b|\n|---|---|\n|aa|bb|"
+        action()
+
+      it 'not insert', ->
+        expect(textarea.val()).to.eql "|a|b|\n|---|---|\n|aa|bb|"
+
     context 'in table', ->
       beforeEach ->
         text = "|a|b|\n|---|---|\n|aa|bb|"

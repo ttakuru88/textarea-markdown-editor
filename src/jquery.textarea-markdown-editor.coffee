@@ -57,6 +57,7 @@ class MarkdownEditor
     currentLine = @replaceEscapedPipe @getCurrentLine(text)
     match = currentLine.match(rowFormat)
     return unless match
+    return if @isTableHeader(text)
     if currentLine.match(emptyRowFormat) && @isTableBody(text)
       @removeCurrentLine(text)
       return
@@ -88,6 +89,12 @@ class MarkdownEditor
 
   replaceEscapedPipe: (text) ->
     text.replace(/\\\|/g, '..')
+
+  isTableHeader: (text = @getTextArray(), pos = @currentPos() - 1) ->
+    ep = pos = @getPosEndOfLine(text, pos) + 1
+    line = @getCurrentLine(text, pos)
+
+    line.match(rowSepFormat)
 
   isTableBody: (textArray = @getTextArray(), pos = @currentPos() - 1) ->
     line = @replaceEscapedPipe @getCurrentLine(textArray, pos)

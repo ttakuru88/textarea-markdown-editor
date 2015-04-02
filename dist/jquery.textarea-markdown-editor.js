@@ -87,6 +87,9 @@
       if (!match) {
         return;
       }
+      if (this.isTableHeader(text)) {
+        return;
+      }
       if (currentLine.match(emptyRowFormat) && this.isTableBody(text)) {
         this.removeCurrentLine(text);
         return;
@@ -124,6 +127,19 @@
 
     MarkdownEditor.prototype.replaceEscapedPipe = function(text) {
       return text.replace(/\\\|/g, '..');
+    };
+
+    MarkdownEditor.prototype.isTableHeader = function(text, pos) {
+      var ep, line;
+      if (text == null) {
+        text = this.getTextArray();
+      }
+      if (pos == null) {
+        pos = this.currentPos() - 1;
+      }
+      ep = pos = this.getPosEndOfLine(text, pos) + 1;
+      line = this.getCurrentLine(text, pos);
+      return line.match(rowSepFormat);
     };
 
     MarkdownEditor.prototype.isTableBody = function(textArray, pos) {
