@@ -117,6 +117,17 @@ class MarkdownEditor
     pos-- while textArray[pos-1] && textArray[pos-1] != "\n"
     pos
 
+  getPosBeginningOfLines: (text, startPos = @getSelectionStart(), endPos = @getSelectionEnd()) ->
+    beginningPositions = [@getPosBeginningOfLine(text, startPos)]
+
+    startPos = @getPosEndOfLine(startPos) + 1
+    if startPos < endPos
+      for pos in [startPos..endPos]
+        break unless text[pos]
+        beginningPositions.push(pos) if pos > 0 && text[pos-1] == "\n"
+
+    beginningPositions
+
   getCurrentLine: (textArray = @getTextArray(), pos = @getSelectionStart() - 1) ->
     initPos = pos
 

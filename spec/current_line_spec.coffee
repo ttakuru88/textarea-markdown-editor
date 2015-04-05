@@ -1,4 +1,4 @@
-describe 'Support list input', ->
+describe '#getCurrentLine', ->
     textarea = null
     action = null
     cursorPos = null

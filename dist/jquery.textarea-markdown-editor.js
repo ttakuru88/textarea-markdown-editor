@@ -191,6 +191,29 @@
       return pos;
     };
 
+    MarkdownEditor.prototype.getPosBeginningOfLines = function(text, startPos, endPos) {
+      var beginningPositions, j, pos, ref, ref1;
+      if (startPos == null) {
+        startPos = this.getSelectionStart();
+      }
+      if (endPos == null) {
+        endPos = this.getSelectionEnd();
+      }
+      beginningPositions = [this.getPosBeginningOfLine(text, startPos)];
+      startPos = this.getPosEndOfLine(startPos) + 1;
+      if (startPos < endPos) {
+        for (pos = j = ref = startPos, ref1 = endPos; ref <= ref1 ? j <= ref1 : j >= ref1; pos = ref <= ref1 ? ++j : --j) {
+          if (!text[pos]) {
+            break;
+          }
+          if (pos > 0 && text[pos - 1] === "\n") {
+            beginningPositions.push(pos);
+          }
+        }
+      }
+      return beginningPositions;
+    };
+
     MarkdownEditor.prototype.getCurrentLine = function(textArray, pos) {
       var afterChars, beforeChars, initPos;
       if (textArray == null) {
