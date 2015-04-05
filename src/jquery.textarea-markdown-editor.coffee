@@ -206,6 +206,11 @@ class MarkdownEditor
       if listPositions.length > 1
         @setSelectionRange(listPositions[0], @getPosEndOfLine(text, listPositions[listPositions.length-1]))
       else
+        if dPos < 0
+          beginPos = @getPosBeginningOfLine(text, currentPos)
+          backPos = @options.tabSize - (currentPos - beginPos)
+          dPos += backPos if backPos > 0
+
         @setSelectionRange(currentPos + dPos, currentPos + dPos)
 
     @insert(text, @tabSpaces) unless listPositions.length

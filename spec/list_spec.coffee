@@ -6,15 +6,17 @@ describe 'Support list input', ->
     selectionStart = null
     selectionEnd = null
     markdownEditor = null
+    shiftKey = false
 
     beforeEach ->
       textarea = $('<textarea>').markdownEditor()
       markdownEditor = textarea.data('markdownEditor')
       selectionStart = null
       selectionEnd = null
+      shiftKey = false
 
       action = ->
-        enterEvent = $.Event('keydown', keyCode: keyCode)
+        enterEvent = $.Event('keydown', keyCode: keyCode, shiftKey: shiftKey)
 
         textarea.val(line)
 
@@ -65,6 +67,20 @@ describe 'Support list input', ->
         it 'selected indent lines', ->
           expect(markdownEditor.selectionBegin).to.eql 0
           expect(markdownEditor.selectionEnd).to.eql 17
+
+      context 'with shift key', ->
+        beforeEach ->
+          shiftKey = true
+          line = "- a\n  - b"
+          selectionStart = 4
+
+          action()
+
+        it 'remove space on second line', ->
+          expect(textarea.val()).to.eql "- a\n- b"
+
+        it 'cursor position is beginning of line', ->
+          expect(markdownEditor.selectionBegin).to.eql 4
 
     context 'press enter', ->
       beforeEach -> keyCode = 13
