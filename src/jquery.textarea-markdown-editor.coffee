@@ -189,7 +189,7 @@ class MarkdownEditor
         pos += dPos
         currentLine = @getCurrentLine(text, pos)
 
-        if currentLine.match(listFormat)
+        if currentLine.match(listFormat) && !currentLine.match(hrFormat)
           listPositions.push(pos)
 
           if e.shiftKey

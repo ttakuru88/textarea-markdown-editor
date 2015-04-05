@@ -284,7 +284,7 @@
           pos = ref[j];
           pos += dPos;
           currentLine = this.getCurrentLine(text, pos);
-          if (currentLine.match(listFormat)) {
+          if (currentLine.match(listFormat) && !currentLine.match(hrFormat)) {
             listPositions.push(pos);
             if (e.shiftKey) {
               if (currentLine.indexOf(this.tabSpaces) === 0) {

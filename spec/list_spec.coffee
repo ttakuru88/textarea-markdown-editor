@@ -37,6 +37,13 @@ describe 'Support list input', ->
             action()
             expect(textarea.val()).to.eql 'aaa  '
 
+        context 'hr line', ->
+          beforeEach -> line = '- - - - - -'
+
+          it 'insert tab', ->
+            action()
+            expect(textarea.val()).to.eql '- - - - - -  '
+
         context 'list line', ->
           beforeEach -> line = '- aaa'
 
