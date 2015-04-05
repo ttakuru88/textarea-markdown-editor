@@ -176,17 +176,36 @@ class MarkdownEditor
 
   tabToSpace: (e) ->
     text = @getTextArray()
-    currentLine = @getCurrentLine(text)
 
-    if @options.list && currentLine.match(listFormat)
-      pos = @getPosBeginningOfLine(text)
+    listPositions = []
+    if @options.list
+      dPos = 0
+      currentPos = @getSelectionStart()
 
-      if e.shiftKey
-        @removeSpaces(text, pos) if currentLine.indexOf(@tabSpaces) == 0
+      for pos in @getPosBeginningOfLines(text, currentPos)
+        pos += dPos
+        currentLine = @getCurrentLine(text, pos)
+
+        if currentLine.match(listFormat)
+          listPositions.push(pos)
+
+          if e.shiftKey
+            if currentLine.indexOf(@tabSpaces) == 0
+              text.splice(pos, @options.tabSize)
+              dPos -= @options.tabSize
+          else
+            for i in [0...@options.tabSize]
+              text.splice(pos, 0, ' ')
+
+            dPos += @options.tabSize
+
+      @$el.val(text.join(''))
+      if listPositions.length > 1
+        @setSelectionRange(listPositions[0], @getPosEndOfLine(text, listPositions[listPositions.length-1]))
       else
-        @insertSpaces(text, pos)
-    else
-      @insert(text, @tabSpaces)
+        @setSelectionRange(currentPos + dPos, currentPos + dPos)
+
+    @insert(text, @tabSpaces) unless listPositions.length
 
   moveToPrevCell: (text, pos = @getSelectionStart() - 1) ->
     overSep = false
@@ -266,13 +285,6 @@ class MarkdownEditor
 
     @insert(text, @tabSpaces, pos)
     @setSelectionRange(nextPos, nextPos)
-
-  removeSpaces: (text, pos) ->
-    text.splice(pos, @tabSpaces.length)
-    pos = @getSelectionStart() - @tabSpaces.length
-
-    @$el.val(text.join(''))
-    @setSelectionRange(pos, pos)
 
   insert: (textArray, insertText, pos = @getSelectionStart()) ->
     textArray.splice(pos, 0, insertText)

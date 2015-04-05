@@ -273,19 +273,40 @@
     };
 
     MarkdownEditor.prototype.tabToSpace = function(e) {
-      var currentLine, pos, text;
+      var currentLine, currentPos, dPos, i, j, k, len, listPositions, pos, ref, ref1, text;
       text = this.getTextArray();
-      currentLine = this.getCurrentLine(text);
-      if (this.options.list && currentLine.match(listFormat)) {
-        pos = this.getPosBeginningOfLine(text);
-        if (e.shiftKey) {
-          if (currentLine.indexOf(this.tabSpaces) === 0) {
-            return this.removeSpaces(text, pos);
+      listPositions = [];
+      if (this.options.list) {
+        dPos = 0;
+        currentPos = this.getSelectionStart();
+        ref = this.getPosBeginningOfLines(text, currentPos);
+        for (j = 0, len = ref.length; j < len; j++) {
+          pos = ref[j];
+          pos += dPos;
+          currentLine = this.getCurrentLine(text, pos);
+          if (currentLine.match(listFormat)) {
+            listPositions.push(pos);
+            if (e.shiftKey) {
+              if (currentLine.indexOf(this.tabSpaces) === 0) {
+                text.splice(pos, this.options.tabSize);
+                dPos -= this.options.tabSize;
+              }
+            } else {
+              for (i = k = 0, ref1 = this.options.tabSize; 0 <= ref1 ? k < ref1 : k > ref1; i = 0 <= ref1 ? ++k : --k) {
+                text.splice(pos, 0, ' ');
+              }
+              dPos += this.options.tabSize;
+            }
           }
-        } else {
-          return this.insertSpaces(text, pos);
         }
-      } else {
+        this.$el.val(text.join(''));
+        if (listPositions.length > 1) {
+          this.setSelectionRange(listPositions[0], this.getPosEndOfLine(text, listPositions[listPositions.length - 1]));
+        } else {
+          this.setSelectionRange(currentPos + dPos, currentPos + dPos);
+        }
+      }
+      if (!listPositions.length) {
         return this.insert(text, this.tabSpaces);
       }
     };
@@ -400,13 +421,6 @@
       nextPos = this.getSelectionStart() + this.tabSpaces.length;
       this.insert(text, this.tabSpaces, pos);
       return this.setSelectionRange(nextPos, nextPos);
-    };
-
-    MarkdownEditor.prototype.removeSpaces = function(text, pos) {
-      text.splice(pos, this.tabSpaces.length);
-      pos = this.getSelectionStart() - this.tabSpaces.length;
-      this.$el.val(text.join(''));
-      return this.setSelectionRange(pos, pos);
     };
 
     MarkdownEditor.prototype.insert = function(textArray, insertText, pos) {

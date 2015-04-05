@@ -3,35 +3,61 @@ describe 'Support list input', ->
     action = null
     line = null
     keyCode = null
+    selectionStart = null
+    selectionEnd = null
+    markdownEditor = null
 
     beforeEach ->
       textarea = $('<textarea>').markdownEditor()
+      markdownEditor = textarea.data('markdownEditor')
+      selectionStart = null
+      selectionEnd = null
 
       action = ->
         enterEvent = $.Event('keydown', keyCode: keyCode)
 
         textarea.val(line)
-        textarea.data('markdownEditor').getSelectionStart = -> # stub
-          line.length
+
+        selectionStart ?= line.length
+        markdownEditor.getSelectionStart = -> selectionStart
+
+        selectionEnd ?= selectionStart
+        markdownEditor.getSelectionEnd = -> selectionEnd
 
         textarea.trigger(enterEvent)
 
     context 'press tab', ->
       beforeEach -> keyCode = 9
 
-      context 'not list line', ->
-        beforeEach -> line = 'aaa'
+      context 'not selection range', ->
+        context 'not list line', ->
+          beforeEach -> line = 'aaa'
 
-        it 'insert space', ->
+          it 'insert space', ->
+            action()
+            expect(textarea.val()).to.eql 'aaa  '
+
+        context 'list line', ->
+          beforeEach -> line = '- aaa'
+
+          it 'inert space at head', ->
+            action()
+            expect(textarea.val()).to.eql '  - aaa'
+
+      context 'selection range', ->
+        beforeEach ->
+          line = "- abc\n  - def"
+          selectionStart = 1
+          selectionEnd = 9
+
           action()
-          expect(textarea.val()).to.eql 'aaa  '
 
-      context 'list line', ->
-        beforeEach -> line = '- aaa'
+        it 'insert space to all beginning of lines', ->
+          expect(textarea.val()).to.eql "  - abc\n    - def"
 
-        it 'inert space at head', ->
-          action()
-          expect(textarea.val()).to.eql '  - aaa'
+        it 'selected indent lines', ->
+          expect(markdownEditor.selectionBegin).to.eql 0
+          expect(markdownEditor.selectionEnd).to.eql 17
 
     context 'press enter', ->
       beforeEach -> keyCode = 13
