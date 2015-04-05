@@ -24,6 +24,13 @@ $('textarea').markdownEditor();
 dist/index.html
 ```
 
+## Browser Support
+
+* Chrome
+* Safari
+* Firefox
+* IE9+
+
 ## Development
 
 ### Install
