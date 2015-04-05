@@ -33,11 +33,13 @@
       }
       this.$el.on('keydown.markdownEditor', (function(_this) {
         return function(e) {
-          if (_this.options.list) {
-            _this.supportInputListFormat(e);
-          }
-          if (_this.options.table) {
-            _this.supportInputTableFormat(e);
+          if (e.keyCode === KeyCodes.enter && !e.shiftKey) {
+            if (_this.options.list) {
+              _this.supportInputListFormat(e);
+            }
+            if (_this.options.table) {
+              _this.supportInputTableFormat(e);
+            }
           }
           if (e.keyCode === KeyCodes.tab) {
             return _this.onPressTab(e);
@@ -55,10 +57,7 @@
     };
 
     MarkdownEditor.prototype.supportInputListFormat = function(e) {
-      var base, currentLine, extSpace, match, text;
-      if (e.keyCode !== KeyCodes.enter || e.shiftKey) {
-        return;
-      }
+      var base, currentLine, extSpace, match, pos, text;
       text = this.getTextArray();
       currentLine = this.getCurrentLine(text);
       if (currentLine.match(hrFormat)) {
@@ -66,6 +65,10 @@
       }
       match = currentLine.match(listFormat);
       if (!match) {
+        return;
+      }
+      pos = this.getSelectionStart();
+      if (text[pos] && text[pos] !== "\n") {
         return;
       }
       if (match[5].length <= 0) {
@@ -80,9 +83,6 @@
 
     MarkdownEditor.prototype.supportInputTableFormat = function(e) {
       var char, currentLine, i, j, k, l, len, match, pos, prevPos, ref, ref1, row, rows, sep, text;
-      if (e.keyCode !== KeyCodes.enter || e.shiftKey) {
-        return;
-      }
       text = this.getTextArray();
       currentLine = this.replaceEscapedPipe(this.getCurrentLine(text));
       match = currentLine.match(rowFormat);

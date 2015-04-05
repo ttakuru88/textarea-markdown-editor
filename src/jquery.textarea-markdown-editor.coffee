@@ -18,9 +18,12 @@ class MarkdownEditor
     @tabSpaces += ' ' for i in [0...@options.tabSize]
 
     @$el.on 'keydown.markdownEditor', (e) =>
-      @supportInputListFormat(e) if @options.list
-      @supportInputTableFormat(e) if @options.table
-      @onPressTab(e) if e.keyCode == KeyCodes.tab
+      if e.keyCode == KeyCodes.enter && !e.shiftKey
+        @supportInputListFormat(e) if @options.list
+        @supportInputTableFormat(e) if @options.table
+
+      if e.keyCode == KeyCodes.tab
+        @onPressTab(e)
 
   getTextArray: ->
     @getText().split('')
@@ -29,8 +32,6 @@ class MarkdownEditor
     @$el.val()
 
   supportInputListFormat: (e) ->
-    return if e.keyCode != KeyCodes.enter || e.shiftKey
-
     text = @getTextArray()
 
     currentLine = @getCurrentLine(text)
@@ -38,6 +39,10 @@ class MarkdownEditor
 
     match = currentLine.match(listFormat)
     return unless match
+
+    pos = @getSelectionStart()
+    return if text[pos] && text[pos] != "\n"
+
     if match[5].length <= 0
       @removeCurrentLine(text)
       return
@@ -51,8 +56,6 @@ class MarkdownEditor
     @options.onInsertedList?(e)
 
   supportInputTableFormat: (e) ->
-    return if e.keyCode != KeyCodes.enter || e.shiftKey
-
     text = @getTextArray()
     currentLine = @replaceEscapedPipe @getCurrentLine(text)
     match = currentLine.match(rowFormat)

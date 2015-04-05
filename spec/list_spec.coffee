@@ -121,9 +121,17 @@ describe 'Support list input', ->
       context 'start with "- "', ->
         beforeEach -> line = '- abc'
 
-        it 'start with "- " next line', ->
-          action()
-          expect(textarea.val()).to.eql "- abc\n- "
+        context 'cursor on end of line', ->
+          it 'start with "- " next line', ->
+            action()
+            expect(textarea.val()).to.eql "- abc\n- "
+
+        context 'cursor on beginning of line', ->
+          beforeEach -> selectionStart = 0
+
+          it 'do nothing', ->
+            action()
+            expect(textarea.val()).to.eql "- abc"
 
       context 'start with "* "', ->
         beforeEach -> line = '* abc'
