@@ -267,7 +267,7 @@ class MarkdownEditor
     @setSelectionRange(pos, pos)
 
   currentPos: ->
-    @$el.caret('pos')
+    @el.selectionStart
 
   destroy: ->
     @$el.off('keydown.markdownEditor').data('markdownEditor', null)

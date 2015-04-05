@@ -4,7 +4,6 @@ module.exports = (config) ->
     frameworks: ['mocha', 'expect', 'sinon']
     files: [
       'bower_components/jquery/dist/jquery.min.js'
-      'bower_components/Caret.js/dist/jquery.caret.min.js'
       'dist/jquery.textarea-markdown-editor.js'
       'dist/index.html'
       'spec/spec_helper.coffee'

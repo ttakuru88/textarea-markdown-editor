@@ -388,7 +388,7 @@
     };
 
     MarkdownEditor.prototype.currentPos = function() {
-      return this.$el.caret('pos');
+      return this.el.selectionStart;
     };
 
     MarkdownEditor.prototype.destroy = function() {
