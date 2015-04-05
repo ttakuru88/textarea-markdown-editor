@@ -20,7 +20,7 @@ class MarkdownEditor
     @$el.on 'keydown.markdownEditor', (e) =>
       @supportInputListFormat(e) if @options.list
       @supportInputTableFormat(e) if @options.table
-      @tabToSpace(e)
+      @onPressTab(e) if e.keyCode == KeyCodes.tab
 
   getTextArray: ->
     @getText().split('')
@@ -143,35 +143,39 @@ class MarkdownEditor
     @$el.val(textArray.join(''))
     @setSelectionRange(beginPos, beginPos)
 
-  tabToSpace: (e) =>
-    return if e.keyCode != KeyCodes.tab
+  onPressTab: (e) =>
     e.preventDefault()
 
-    if @options.table
-      text = @replaceEscapedPipe(@getText())
-      currentLine = @getCurrentLine(text)
+    return if @options.table && @moveCursorOnTableCell(e)
 
-      if currentLine.match(rowFormat)
-        if e.shiftKey
-          @moveToPrevCell(text)
-        else
-          @moveToNextCell(text)
+    @tabToSpace(e) if @options.tabToSpace
 
-        return
+  moveCursorOnTableCell: (e) ->
+    text = @replaceEscapedPipe(@getText())
+    currentLine = @getCurrentLine(text)
 
-    if @options.tabToSpace
-      text = @getTextArray()
-      currentLine = @getCurrentLine(text)
+    return false unless currentLine.match(rowFormat)
 
-      if @options.list && currentLine.match(listFormat)
-        pos = @getPosBeginningOfLine(text)
+    if e.shiftKey
+      @moveToPrevCell(text)
+    else
+      @moveToNextCell(text)
 
-        if e.shiftKey
-          @removeSpaces(text, pos) if currentLine.indexOf(@tabSpaces) == 0
-        else
-          @insertSpaces(text, pos)
+    true
+
+  tabToSpace: (e) ->
+    text = @getTextArray()
+    currentLine = @getCurrentLine(text)
+
+    if @options.list && currentLine.match(listFormat)
+      pos = @getPosBeginningOfLine(text)
+
+      if e.shiftKey
+        @removeSpaces(text, pos) if currentLine.indexOf(@tabSpaces) == 0
       else
-        @insert(text, @tabSpaces)
+        @insertSpaces(text, pos)
+    else
+      @insert(text, @tabSpaces)
 
   moveToPrevCell: (text, pos = @getSelectionStart() - 1) ->
     overSep = false

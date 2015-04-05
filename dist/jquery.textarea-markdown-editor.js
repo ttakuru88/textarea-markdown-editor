@@ -24,7 +24,7 @@
       var i, j, ref;
       this.el = el;
       this.options = options1;
-      this.tabToSpace = bind(this.tabToSpace, this);
+      this.onPressTab = bind(this.onPressTab, this);
       this.$el = $(this.el);
       this.selectionBegin = this.selectionEnd = 0;
       this.tabSpaces = '';
@@ -39,7 +39,9 @@
           if (_this.options.table) {
             _this.supportInputTableFormat(e);
           }
-          return _this.tabToSpace(e);
+          if (e.keyCode === KeyCodes.tab) {
+            return _this.onPressTab(e);
+          }
         };
       })(this));
     }
@@ -222,39 +224,46 @@
       return this.setSelectionRange(beginPos, beginPos);
     };
 
-    MarkdownEditor.prototype.tabToSpace = function(e) {
-      var currentLine, pos, text;
-      if (e.keyCode !== KeyCodes.tab) {
+    MarkdownEditor.prototype.onPressTab = function(e) {
+      e.preventDefault();
+      if (this.options.table && this.moveCursorOnTableCell(e)) {
         return;
       }
-      e.preventDefault();
-      if (this.options.table) {
-        text = this.replaceEscapedPipe(this.getText());
-        currentLine = this.getCurrentLine(text);
-        if (currentLine.match(rowFormat)) {
-          if (e.shiftKey) {
-            this.moveToPrevCell(text);
-          } else {
-            this.moveToNextCell(text);
-          }
-          return;
-        }
-      }
       if (this.options.tabToSpace) {
-        text = this.getTextArray();
-        currentLine = this.getCurrentLine(text);
-        if (this.options.list && currentLine.match(listFormat)) {
-          pos = this.getPosBeginningOfLine(text);
-          if (e.shiftKey) {
-            if (currentLine.indexOf(this.tabSpaces) === 0) {
-              return this.removeSpaces(text, pos);
-            }
-          } else {
-            return this.insertSpaces(text, pos);
+        return this.tabToSpace(e);
+      }
+    };
+
+    MarkdownEditor.prototype.moveCursorOnTableCell = function(e) {
+      var currentLine, text;
+      text = this.replaceEscapedPipe(this.getText());
+      currentLine = this.getCurrentLine(text);
+      if (!currentLine.match(rowFormat)) {
+        return false;
+      }
+      if (e.shiftKey) {
+        this.moveToPrevCell(text);
+      } else {
+        this.moveToNextCell(text);
+      }
+      return true;
+    };
+
+    MarkdownEditor.prototype.tabToSpace = function(e) {
+      var currentLine, pos, text;
+      text = this.getTextArray();
+      currentLine = this.getCurrentLine(text);
+      if (this.options.list && currentLine.match(listFormat)) {
+        pos = this.getPosBeginningOfLine(text);
+        if (e.shiftKey) {
+          if (currentLine.indexOf(this.tabSpaces) === 0) {
+            return this.removeSpaces(text, pos);
           }
         } else {
-          return this.insert(text, this.tabSpaces);
+          return this.insertSpaces(text, pos);
         }
+      } else {
+        return this.insert(text, this.tabSpaces);
       }
     };
 
