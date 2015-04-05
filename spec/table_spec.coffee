@@ -19,7 +19,7 @@ describe 'Support table input', ->
           currentPos
         else
           text.length
-        markdownEditor.currentPos = ->
+        markdownEditor.getSelectionStart = ->
           pos
         markdownEditor.selectionBegin = markdownEditor.selectionEnd = pos
 

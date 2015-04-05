@@ -16,7 +16,7 @@ describe 'Support list input', ->
 
       action = ->
         textarea.val("#{firstLine}\n#{secondLine}")
-        textarea.data('markdownEditor').currentPos = ->
+        textarea.data('markdownEditor').getSelectionStart = ->
           cursorPos
 
         markdownEditor.getCurrentLine()

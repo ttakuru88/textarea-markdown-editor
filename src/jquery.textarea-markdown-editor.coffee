@@ -90,13 +90,13 @@ class MarkdownEditor
   replaceEscapedPipe: (text) ->
     text.replace(/\\\|/g, '..')
 
-  isTableHeader: (text = @getTextArray(), pos = @currentPos() - 1) ->
+  isTableHeader: (text = @getTextArray(), pos = @getSelectionStart() - 1) ->
     ep = pos = @getPosEndOfLine(text, pos) + 1
     line = @getCurrentLine(text, pos)
 
     line.match(rowSepFormat)
 
-  isTableBody: (textArray = @getTextArray(), pos = @currentPos() - 1) ->
+  isTableBody: (textArray = @getTextArray(), pos = @getSelectionStart() - 1) ->
     line = @replaceEscapedPipe @getCurrentLine(textArray, pos)
     while line.match(rowFormat) && pos > 0
       return true if line.match(rowSepFormat)
@@ -105,19 +105,19 @@ class MarkdownEditor
 
     false
 
-  getPrevLine: (textArray, pos = @currentPos() - 1) ->
+  getPrevLine: (textArray, pos = @getSelectionStart() - 1) ->
     pos = @getPosBeginningOfLine(textArray, pos)
     @getCurrentLine(textArray, pos - 2)
 
-  getPosEndOfLine: (textArray, pos = @currentPos()) ->
+  getPosEndOfLine: (textArray, pos = @getSelectionStart()) ->
     pos++ while textArray[pos] && textArray[pos] != "\n"
     pos
 
-  getPosBeginningOfLine: (textArray, pos = @currentPos()) ->
+  getPosBeginningOfLine: (textArray, pos = @getSelectionStart()) ->
     pos-- while textArray[pos-1] && textArray[pos-1] != "\n"
     pos
 
-  getCurrentLine: (textArray = @getTextArray(), pos = @currentPos() - 1) ->
+  getCurrentLine: (textArray = @getTextArray(), pos = @getSelectionStart() - 1) ->
     initPos = pos
 
     beforeChars = ''
@@ -173,7 +173,7 @@ class MarkdownEditor
       else
         @insert(text, @tabSpaces)
 
-  moveToPrevCell: (text, pos = @currentPos() - 1) ->
+  moveToPrevCell: (text, pos = @getSelectionStart() - 1) ->
     overSep = false
     prevLine = false
     ep = pos
@@ -209,7 +209,7 @@ class MarkdownEditor
     @setSelectionRange(ssp, ep)
     true
 
-  moveToNextCell: (text, pos = @currentPos()) ->
+  moveToNextCell: (text, pos = @getSelectionStart()) ->
     overSep = false
     overSepSpace = false
     eep = null
@@ -247,27 +247,30 @@ class MarkdownEditor
     true
 
   insertSpaces: (text, pos) ->
-    nextPos = @currentPos() + @tabSpaces.length
+    nextPos = @getSelectionStart() + @tabSpaces.length
 
     @insert(text, @tabSpaces, pos)
     @setSelectionRange(nextPos, nextPos)
 
   removeSpaces: (text, pos) ->
     text.splice(pos, @tabSpaces.length)
-    pos = @currentPos() - @tabSpaces.length
+    pos = @getSelectionStart() - @tabSpaces.length
 
     @$el.val(text.join(''))
     @setSelectionRange(pos, pos)
 
-  insert: (textArray, insertText, pos = @currentPos()) ->
+  insert: (textArray, insertText, pos = @getSelectionStart()) ->
     textArray.splice(pos, 0, insertText)
     @$el.val(textArray.join(''))
 
     pos += insertText.length
     @setSelectionRange(pos, pos)
 
-  currentPos: ->
+  getSelectionStart: ->
     @el.selectionStart
+
+  getSelectionEnd: ->
+    @el.selectionEnd
 
   destroy: ->
     @$el.off('keydown.markdownEditor').data('markdownEditor', null)

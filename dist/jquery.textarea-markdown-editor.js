@@ -135,7 +135,7 @@
         text = this.getTextArray();
       }
       if (pos == null) {
-        pos = this.currentPos() - 1;
+        pos = this.getSelectionStart() - 1;
       }
       ep = pos = this.getPosEndOfLine(text, pos) + 1;
       line = this.getCurrentLine(text, pos);
@@ -148,7 +148,7 @@
         textArray = this.getTextArray();
       }
       if (pos == null) {
-        pos = this.currentPos() - 1;
+        pos = this.getSelectionStart() - 1;
       }
       line = this.replaceEscapedPipe(this.getCurrentLine(textArray, pos));
       while (line.match(rowFormat) && pos > 0) {
@@ -163,7 +163,7 @@
 
     MarkdownEditor.prototype.getPrevLine = function(textArray, pos) {
       if (pos == null) {
-        pos = this.currentPos() - 1;
+        pos = this.getSelectionStart() - 1;
       }
       pos = this.getPosBeginningOfLine(textArray, pos);
       return this.getCurrentLine(textArray, pos - 2);
@@ -171,7 +171,7 @@
 
     MarkdownEditor.prototype.getPosEndOfLine = function(textArray, pos) {
       if (pos == null) {
-        pos = this.currentPos();
+        pos = this.getSelectionStart();
       }
       while (textArray[pos] && textArray[pos] !== "\n") {
         pos++;
@@ -181,7 +181,7 @@
 
     MarkdownEditor.prototype.getPosBeginningOfLine = function(textArray, pos) {
       if (pos == null) {
-        pos = this.currentPos();
+        pos = this.getSelectionStart();
       }
       while (textArray[pos - 1] && textArray[pos - 1] !== "\n") {
         pos--;
@@ -195,7 +195,7 @@
         textArray = this.getTextArray();
       }
       if (pos == null) {
-        pos = this.currentPos() - 1;
+        pos = this.getSelectionStart() - 1;
       }
       initPos = pos;
       beforeChars = '';
@@ -261,7 +261,7 @@
     MarkdownEditor.prototype.moveToPrevCell = function(text, pos) {
       var ep, epAdded, overSep, prevLine, sp, ssp;
       if (pos == null) {
-        pos = this.currentPos() - 1;
+        pos = this.getSelectionStart() - 1;
       }
       overSep = false;
       prevLine = false;
@@ -316,7 +316,7 @@
     MarkdownEditor.prototype.moveToNextCell = function(text, pos) {
       var eep, ep, overSep, overSepSpace, sp;
       if (pos == null) {
-        pos = this.currentPos();
+        pos = this.getSelectionStart();
       }
       overSep = false;
       overSepSpace = false;
@@ -365,21 +365,21 @@
 
     MarkdownEditor.prototype.insertSpaces = function(text, pos) {
       var nextPos;
-      nextPos = this.currentPos() + this.tabSpaces.length;
+      nextPos = this.getSelectionStart() + this.tabSpaces.length;
       this.insert(text, this.tabSpaces, pos);
       return this.setSelectionRange(nextPos, nextPos);
     };
 
     MarkdownEditor.prototype.removeSpaces = function(text, pos) {
       text.splice(pos, this.tabSpaces.length);
-      pos = this.currentPos() - this.tabSpaces.length;
+      pos = this.getSelectionStart() - this.tabSpaces.length;
       this.$el.val(text.join(''));
       return this.setSelectionRange(pos, pos);
     };
 
     MarkdownEditor.prototype.insert = function(textArray, insertText, pos) {
       if (pos == null) {
-        pos = this.currentPos();
+        pos = this.getSelectionStart();
       }
       textArray.splice(pos, 0, insertText);
       this.$el.val(textArray.join(''));
@@ -387,8 +387,12 @@
       return this.setSelectionRange(pos, pos);
     };
 
-    MarkdownEditor.prototype.currentPos = function() {
+    MarkdownEditor.prototype.getSelectionStart = function() {
       return this.el.selectionStart;
+    };
+
+    MarkdownEditor.prototype.getSelectionEnd = function() {
+      return this.el.selectionEnd;
     };
 
     MarkdownEditor.prototype.destroy = function() {

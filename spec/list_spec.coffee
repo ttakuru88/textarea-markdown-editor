@@ -11,7 +11,7 @@ describe 'Support list input', ->
         enterEvent = $.Event('keydown', keyCode: keyCode)
 
         textarea.val(line)
-        textarea.data('markdownEditor').currentPos = -> # stub
+        textarea.data('markdownEditor').getSelectionStart = -> # stub
           line.length
 
         textarea.trigger(enterEvent)
