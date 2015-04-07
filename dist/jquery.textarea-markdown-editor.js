@@ -82,14 +82,18 @@
     };
 
     MarkdownEditor.prototype.supportInputTableFormat = function(e) {
-      var base, char, currentLine, i, j, k, l, len, match, pos, prevPos, ref, ref1, row, rows, sep, text;
+      var base, char, currentLine, i, j, k, l, len, match, pos, prevPos, ref, ref1, row, rows, selectionStart, sep, text;
       text = this.getTextArray();
       currentLine = this.replaceEscapedPipe(this.getCurrentLine(text));
+      selectionStart = this.getSelectionStart();
       match = currentLine.match(rowFormat);
       if (!match) {
         return;
       }
       if (this.isTableHeader(text)) {
+        return;
+      }
+      if (selectionStart === this.getPosBeginningOfLine(text, selectionStart)) {
         return;
       }
       if (currentLine.match(emptyRowFormat) && this.isTableBody(text)) {

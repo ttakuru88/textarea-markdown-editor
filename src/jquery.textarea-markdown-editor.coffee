@@ -58,9 +58,11 @@ class MarkdownEditor
   supportInputTableFormat: (e) ->
     text = @getTextArray()
     currentLine = @replaceEscapedPipe @getCurrentLine(text)
+    selectionStart = @getSelectionStart()
     match = currentLine.match(rowFormat)
     return unless match
     return if @isTableHeader(text)
+    return if selectionStart == @getPosBeginningOfLine(text, selectionStart)
     if currentLine.match(emptyRowFormat) && @isTableBody(text)
       @removeCurrentLine(text)
       return

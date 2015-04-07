@@ -87,6 +87,15 @@ describe 'Support table input', ->
         expect(markdownEditor.selectionBegin).to.eql 22
         expect(markdownEditor.selectionEnd).to.eql 22
 
+    context 'cursor on beginning of line on body', ->
+      beforeEach ->
+        currentPos = 16
+        text = "|a|b|\n|---|---|\n|c|d|\n"
+        action()
+
+      it 'nothing do', ->
+        expect(textarea.val()).to.eql "|a|b|\n|---|---|\n|c|d|\n"
+
     context 'new line on empty row', ->
       beforeEach ->
         currentPos = 18
