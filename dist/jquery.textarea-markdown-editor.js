@@ -82,7 +82,7 @@
     };
 
     MarkdownEditor.prototype.supportInputTableFormat = function(e) {
-      var char, currentLine, i, j, k, l, len, match, pos, prevPos, ref, ref1, row, rows, sep, text;
+      var base, char, currentLine, i, j, k, l, len, match, pos, prevPos, ref, ref1, row, rows, sep, text;
       text = this.getTextArray();
       currentLine = this.replaceEscapedPipe(this.getCurrentLine(text));
       match = currentLine.match(rowFormat);
@@ -118,7 +118,8 @@
       }
       text = this.insert(text, sep + row, prevPos);
       pos = prevPos + sep.length + row.length - rows * 3 + 1;
-      return this.setSelectionRange(pos, pos);
+      this.setSelectionRange(pos, pos);
+      return typeof (base = this.options).onInsertedTable === "function" ? base.onInsertedTable(e) : void 0;
     };
 
     MarkdownEditor.prototype.setSelectionRange = function(selectionBegin, selectionEnd) {
@@ -473,6 +474,7 @@
       options = $.extend({
         tabSize: 2,
         onInsertedList: null,
+        onInsertedTable: null,
         tabToSpace: true,
         list: true,
         table: true

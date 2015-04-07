@@ -9,7 +9,10 @@
 
 <script>
   $(function(){
-    $('#editor').markdownEditor().focus();
+    $('#editor').markdownEditor({
+      onInsertedList: function(){ console.log("inserted list"); },
+      onInsertedTable: function(){ console.log("inserted table"); }
+    }).focus();
   });
 </script>
 

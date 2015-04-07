@@ -87,6 +87,8 @@ class MarkdownEditor
     pos = prevPos + sep.length + row.length - rows * 3 + 1
     @setSelectionRange(pos, pos)
 
+    @options.onInsertedTable?(e)
+
   setSelectionRange: (@selectionBegin, @selectionEnd) ->
     @el.setSelectionRange(@selectionBegin, @selectionEnd)
 
@@ -319,6 +321,7 @@ $.fn.markdownEditor = (options = {}, args = undefined) ->
     options = $.extend
       tabSize: 2
       onInsertedList: null
+      onInsertedTable: null
       tabToSpace: true
       list: true
       table: true
