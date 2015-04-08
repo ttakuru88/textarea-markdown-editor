@@ -8,6 +8,8 @@ class MarkdownEditor
   rowFormat      = /^\|(.*?\|)+\s*$/
   rowSepFormat   = /^\|(\s*:?---+:?\s*\|)+\s*$/
   emptyRowFormat = /^\|(\s*?\|)+\s*$/
+  beginCodeblockFormat = /^((```+)|(~~~+))(\S*\s*)$/
+  endCodeblockFormat   = /^((```+)|(~~~+))$/
 
   constructor: (@el, @options) ->
     @$el = $(@el)
@@ -19,8 +21,9 @@ class MarkdownEditor
 
     @$el.on 'keydown.markdownEditor', (e) =>
       if e.keyCode == KeyCodes.enter && !e.shiftKey
-        @supportInputListFormat(e) if @options.list
+        @supportInputListFormat(e)  if @options.list
         @supportInputTableFormat(e) if @options.table
+        @supportCodeblockFormat(e)  if @options.codeblock
 
       if e.keyCode == KeyCodes.tab
         @onPressTab(e)
@@ -90,6 +93,51 @@ class MarkdownEditor
     @setSelectionRange(pos, pos)
 
     @options.onInsertedTable?(e)
+
+  supportCodeblockFormat: (e) ->
+    text = @getTextArray()
+    selectionStart = @getSelectionStart()
+
+    currentLine = @getCurrentLine(text)
+    match = currentLine.match(beginCodeblockFormat)
+    return unless match
+    return if @isInnerCodeblock(text, selectionStart)
+
+    e.preventDefault()
+
+    @insert(text, "\n\n#{match[1]}")
+    @setSelectionRange(selectionStart + 1, selectionStart + 1)
+
+    @options.onInsertedCodeblock?(e)
+
+  isInnerCodeblock: (text, selectionStart) ->
+    innerTopCodeblock = false
+    codeblockBeginPos = null
+    pos = 0
+    while pos <= selectionStart
+      line = @getCurrentLine(text, pos)
+      if innerTopCodeblock && line.match(endCodeblockFormat)
+        innerTopCodeblock = false
+      else if !innerTopCodeblock && line.match(beginCodeblockFormat)
+        innerTopCodeblock = true
+        codeblockBeginPos = pos
+
+      pos += line.length + 1
+
+    innerBottomCodeblock = false
+    pos = text.length
+    while pos >= selectionStart
+      line = @getCurrentLine(text, pos)
+      if innerBottomCodeblock && line.match(beginCodeblockFormat)
+        innerBottomCodeblock = false
+      else if !innerBottomCodeblock && line.match(endCodeblockFormat)
+        innerBottomCodeblock = true
+
+      pos -= line.length + 1
+
+    beginPos = @getPosBeginningOfLine(text, selectionStart)
+    currentLineIsBegin = codeblockBeginPos == (if beginPos <= 0 then 0 else beginPos - 1)
+    !(innerTopCodeblock && currentLineIsBegin) || innerBottomCodeblock
 
   setSelectionRange: (@selectionBegin, @selectionEnd) ->
     @el.setSelectionRange(@selectionBegin, @selectionEnd)
@@ -324,9 +372,11 @@ $.fn.markdownEditor = (options = {}, args = undefined) ->
       tabSize: 2
       onInsertedList: null
       onInsertedTable: null
+      onInsertedCodeblock: null
       tabToSpace: true
       list: true
       table: true
+      codeblock: true
     , options
 
     @each ->

@@ -8,7 +8,7 @@
   };
 
   MarkdownEditor = (function() {
-    var emptyRowFormat, hrFormat, listFormat, rowFormat, rowSepFormat;
+    var beginCodeblockFormat, emptyRowFormat, endCodeblockFormat, hrFormat, listFormat, rowFormat, rowSepFormat;
 
     listFormat = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/;
 
@@ -19,6 +19,10 @@
     rowSepFormat = /^\|(\s*:?---+:?\s*\|)+\s*$/;
 
     emptyRowFormat = /^\|(\s*?\|)+\s*$/;
+
+    beginCodeblockFormat = /^((```+)|(~~~+))(\S*\s*)$/;
+
+    endCodeblockFormat = /^((```+)|(~~~+))$/;
 
     function MarkdownEditor(el, options1) {
       var i, j, ref;
@@ -39,6 +43,9 @@
             }
             if (_this.options.table) {
               _this.supportInputTableFormat(e);
+            }
+            if (_this.options.codeblock) {
+              _this.supportCodeblockFormat(e);
             }
           }
           if (e.keyCode === KeyCodes.tab) {
@@ -124,6 +131,55 @@
       pos = prevPos + sep.length + row.length - rows * 3 + 1;
       this.setSelectionRange(pos, pos);
       return typeof (base = this.options).onInsertedTable === "function" ? base.onInsertedTable(e) : void 0;
+    };
+
+    MarkdownEditor.prototype.supportCodeblockFormat = function(e) {
+      var base, currentLine, match, selectionStart, text;
+      text = this.getTextArray();
+      selectionStart = this.getSelectionStart();
+      currentLine = this.getCurrentLine(text);
+      match = currentLine.match(beginCodeblockFormat);
+      if (!match) {
+        return;
+      }
+      if (this.isInnerCodeblock(text, selectionStart)) {
+        return;
+      }
+      e.preventDefault();
+      this.insert(text, "\n\n" + match[1]);
+      this.setSelectionRange(selectionStart + 1, selectionStart + 1);
+      return typeof (base = this.options).onInsertedCodeblock === "function" ? base.onInsertedCodeblock(e) : void 0;
+    };
+
+    MarkdownEditor.prototype.isInnerCodeblock = function(text, selectionStart) {
+      var beginPos, codeblockBeginPos, currentLineIsBegin, innerBottomCodeblock, innerTopCodeblock, line, pos;
+      innerTopCodeblock = false;
+      codeblockBeginPos = null;
+      pos = 0;
+      while (pos <= selectionStart) {
+        line = this.getCurrentLine(text, pos);
+        if (innerTopCodeblock && line.match(endCodeblockFormat)) {
+          innerTopCodeblock = false;
+        } else if (!innerTopCodeblock && line.match(beginCodeblockFormat)) {
+          innerTopCodeblock = true;
+          codeblockBeginPos = pos;
+        }
+        pos += line.length + 1;
+      }
+      innerBottomCodeblock = false;
+      pos = text.length;
+      while (pos >= selectionStart) {
+        line = this.getCurrentLine(text, pos);
+        if (innerBottomCodeblock && line.match(beginCodeblockFormat)) {
+          innerBottomCodeblock = false;
+        } else if (!innerBottomCodeblock && line.match(endCodeblockFormat)) {
+          innerBottomCodeblock = true;
+        }
+        pos -= line.length + 1;
+      }
+      beginPos = this.getPosBeginningOfLine(text, selectionStart);
+      currentLineIsBegin = codeblockBeginPos === (beginPos <= 0 ? 0 : beginPos - 1);
+      return !(innerTopCodeblock && currentLineIsBegin) || innerBottomCodeblock;
     };
 
     MarkdownEditor.prototype.setSelectionRange = function(selectionBegin, selectionEnd) {
@@ -479,9 +535,11 @@
         tabSize: 2,
         onInsertedList: null,
         onInsertedTable: null,
+        onInsertedCodeblock: null,
         tabToSpace: true,
         list: true,
-        table: true
+        table: true,
+        codeblock: true
       }, options);
       this.each(function() {
         return $(this).data('markdownEditor', new MarkdownEditor(this, options));
