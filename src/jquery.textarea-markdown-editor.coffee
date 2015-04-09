@@ -259,9 +259,11 @@ class MarkdownEditor
         @setSelectionRange(listPositions[0], @getPosEndOfLine(text, listPositions[listPositions.length-1]))
       else
         if dPos < 0
-          beginPos = @getPosBeginningOfLine(text, currentPos)
-          backPos = @options.tabSize - (currentPos - beginPos)
-          dPos += backPos if backPos > 0
+          beginPos = @getPosBeginningOfLine(text, currentPos + dPos)
+          for i in [-1..-@options.tabSize]
+            if (!text[currentPos+i] || text[currentPos+i] == "\n") && listPositions[0] > beginPos
+              currentPos = listPositions[0] - dPos
+              break
 
         @setSelectionRange(currentPos + dPos, currentPos + dPos)
 

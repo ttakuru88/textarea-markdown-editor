@@ -71,16 +71,29 @@ describe 'Support list input', ->
       context 'with shift key', ->
         beforeEach ->
           shiftKey = true
-          line = "- a\n  - b"
-          selectionStart = 4
+          line = "- a\n  - b\n  - c"
 
-          action()
+        context 'on beginning of line', ->
+          beforeEach ->
+            selectionStart = 4
+            action()
 
-        it 'remove space on second line', ->
-          expect(textarea.val()).to.eql "- a\n- b"
+          it 'remove space on second line', ->
+            expect(textarea.val()).to.eql "- a\n- b\n  - c"
 
-        it 'cursor position is beginning of line', ->
-          expect(markdownEditor.selectionBegin).to.eql 4
+          it 'cursor position is beginning of line', ->
+            expect(markdownEditor.selectionBegin).to.eql 4
+
+        context 'on end of line', ->
+          beforeEach ->
+            selectionStart = 9
+            action()
+
+          it 'remove space on second line', ->
+            expect(textarea.val()).to.eql "- a\n- b\n  - c"
+
+          it 'cursor position is beginning of line', ->
+            expect(markdownEditor.selectionBegin).to.eql 7
 
     context 'press enter', ->
       beforeEach -> keyCode = 13

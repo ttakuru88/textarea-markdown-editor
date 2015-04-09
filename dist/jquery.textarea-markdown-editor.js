@@ -334,7 +334,7 @@
     };
 
     MarkdownEditor.prototype.tabToSpace = function(e) {
-      var backPos, beginPos, currentLine, currentPos, dPos, i, j, k, len, listPositions, pos, ref, ref1, text;
+      var beginPos, currentLine, currentPos, dPos, i, j, k, l, len, listPositions, pos, ref, ref1, ref2, text;
       text = this.getTextArray();
       listPositions = [];
       if (this.options.list) {
@@ -365,10 +365,12 @@
           this.setSelectionRange(listPositions[0], this.getPosEndOfLine(text, listPositions[listPositions.length - 1]));
         } else {
           if (dPos < 0) {
-            beginPos = this.getPosBeginningOfLine(text, currentPos);
-            backPos = this.options.tabSize - (currentPos - beginPos);
-            if (backPos > 0) {
-              dPos += backPos;
+            beginPos = this.getPosBeginningOfLine(text, currentPos + dPos);
+            for (i = l = -1, ref2 = -this.options.tabSize; -1 <= ref2 ? l <= ref2 : l >= ref2; i = -1 <= ref2 ? ++l : --l) {
+              if ((!text[currentPos + i] || text[currentPos + i] === "\n") && listPositions[0] > beginPos) {
+                currentPos = listPositions[0] - dPos;
+                break;
+              }
             }
           }
           this.setSelectionRange(currentPos + dPos, currentPos + dPos);
