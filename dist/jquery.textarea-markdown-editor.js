@@ -534,7 +534,7 @@
       });
     } else {
       options = $.extend({
-        tabSize: 2,
+        tabSize: 4,
         onInsertedList: null,
         onInsertedTable: null,
         onInsertedCodeblock: null,

@@ -37,41 +37,41 @@ describe 'Support list input', ->
 
           it 'insert space', ->
             action()
-            expect(textarea.val()).to.eql 'aaa  '
+            expect(textarea.val()).to.eql 'aaa    '
 
         context 'hr line', ->
           beforeEach -> line = '- - - - - -'
 
           it 'insert tab', ->
             action()
-            expect(textarea.val()).to.eql '- - - - - -  '
+            expect(textarea.val()).to.eql '- - - - - -    '
 
         context 'list line', ->
           beforeEach -> line = '- aaa'
 
           it 'inert space at head', ->
             action()
-            expect(textarea.val()).to.eql '  - aaa'
+            expect(textarea.val()).to.eql '    - aaa'
 
       context 'selection range', ->
         beforeEach ->
           line = "- abc\n  - def"
           selectionStart = 1
-          selectionEnd = 9
+          selectionEnd = 13
 
           action()
 
         it 'insert space to all beginning of lines', ->
-          expect(textarea.val()).to.eql "  - abc\n    - def"
+          expect(textarea.val()).to.eql "    - abc\n      - def"
 
         it 'selected indent lines', ->
           expect(markdownEditor.selectionBegin).to.eql 0
-          expect(markdownEditor.selectionEnd).to.eql 17
+          expect(markdownEditor.selectionEnd).to.eql 21
 
       context 'with shift key', ->
         beforeEach ->
           shiftKey = true
-          line = "- a\n  - b\n  - c"
+          line = "- a\n    - b\n    - c"
 
         context 'on beginning of line', ->
           beforeEach ->
@@ -79,7 +79,7 @@ describe 'Support list input', ->
             action()
 
           it 'remove space on second line', ->
-            expect(textarea.val()).to.eql "- a\n- b\n  - c"
+            expect(textarea.val()).to.eql "- a\n- b\n    - c"
 
           it 'cursor position is beginning of line', ->
             expect(markdownEditor.selectionBegin).to.eql 4
@@ -90,10 +90,10 @@ describe 'Support list input', ->
             action()
 
           it 'remove space on second line', ->
-            expect(textarea.val()).to.eql "- a\n- b\n  - c"
+            expect(textarea.val()).to.eql "- a\n- b\n    - c"
 
           it 'cursor position is beginning of line', ->
-            expect(markdownEditor.selectionBegin).to.eql 7
+            expect(markdownEditor.selectionBegin).to.eql 5
 
     context 'press enter', ->
       beforeEach -> keyCode = 13
