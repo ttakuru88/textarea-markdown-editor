@@ -32,7 +32,7 @@ class MarkdownEditor
     @getText().split('')
 
   getText: ->
-    @$el.val()
+    @el.value
 
   supportInputListFormat: (e) ->
     text = @getTextArray()
@@ -206,7 +206,7 @@ class MarkdownEditor
     removeLength = endPos - beginPos
     textArray.splice(beginPos, removeLength)
 
-    @$el.val(textArray.join(''))
+    @el.value = textArray.join('')
     @setSelectionRange(beginPos, beginPos)
 
   onPressTab: (e) =>
@@ -254,7 +254,7 @@ class MarkdownEditor
 
             dPos += @options.tabSize
 
-      @$el.val(text.join(''))
+      @el.value = text.join('')
       if listPositions.length > 1
         @setSelectionRange(listPositions[0], @getPosEndOfLine(text, listPositions[listPositions.length-1]))
       else
@@ -350,7 +350,7 @@ class MarkdownEditor
 
   insert: (textArray, insertText, pos = @getSelectionStart()) ->
     textArray.splice(pos, 0, insertText)
-    @$el.val(textArray.join(''))
+    @el.value = textArray.join('')
 
     pos += insertText.length
     @setSelectionRange(pos, pos)

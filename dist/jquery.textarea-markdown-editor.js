@@ -60,7 +60,7 @@
     };
 
     MarkdownEditor.prototype.getText = function() {
-      return this.$el.val();
+      return this.el.value;
     };
 
     MarkdownEditor.prototype.supportInputListFormat = function(e) {
@@ -304,7 +304,7 @@
       beginPos = this.getPosBeginningOfLine(textArray);
       removeLength = endPos - beginPos;
       textArray.splice(beginPos, removeLength);
-      this.$el.val(textArray.join(''));
+      this.el.value = textArray.join('');
       return this.setSelectionRange(beginPos, beginPos);
     };
 
@@ -360,7 +360,7 @@
             }
           }
         }
-        this.$el.val(text.join(''));
+        this.el.value = text.join('');
         if (listPositions.length > 1) {
           this.setSelectionRange(listPositions[0], this.getPosEndOfLine(text, listPositions[listPositions.length - 1]));
         } else {
@@ -498,7 +498,7 @@
         pos = this.getSelectionStart();
       }
       textArray.splice(pos, 0, insertText);
-      this.$el.val(textArray.join(''));
+      this.el.value = textArray.join('');
       pos += insertText.length;
       return this.setSelectionRange(pos, pos);
     };
