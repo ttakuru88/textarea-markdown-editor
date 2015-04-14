@@ -100,6 +100,7 @@ class MarkdownEditor
 
     currentLine = @getCurrentLine(text)
     match = currentLine.match(beginCodeblockFormat)
+    return if text[selectionStart + 1] && text[selectionStart + 1] != "\n"
     return unless match
     return if @isInnerCodeblock(text, selectionStart)
 

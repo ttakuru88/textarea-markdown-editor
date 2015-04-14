@@ -139,6 +139,9 @@
       selectionStart = this.getSelectionStart();
       currentLine = this.getCurrentLine(text);
       match = currentLine.match(beginCodeblockFormat);
+      if (text[selectionStart + 1] && text[selectionStart + 1] !== "\n") {
+        return;
+      }
       if (!match) {
         return;
       }

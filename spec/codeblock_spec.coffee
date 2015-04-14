@@ -101,10 +101,20 @@ describe 'Support codeblock input', ->
         context 'input begin codeblock format with language', ->
           beforeEach ->
             text += "abc"
-            action()
 
-          it 'insert end codeblock', ->
-            expect(textarea.val()).to.eql "```abc\n\n```"
+          context 'caret pos is end of line', ->
+            beforeEach -> action()
+
+            it 'insert end codeblock', ->
+              expect(textarea.val()).to.eql "```abc\n\n```"
+
+          context 'caret pos is beginning of line', ->
+            beforeEach ->
+              currentPos = 0
+              action()
+
+            it 'do nothing', ->
+              expect(textarea.val()).to.eql "```abc"
 
         context 'input begin codeblock format with language and spaces', ->
           beforeEach ->
