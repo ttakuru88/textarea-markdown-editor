@@ -21,19 +21,27 @@ describe '#getCurrentLine', ->
 
         markdownEditor.getCurrentLine()
 
-    context 'cusor on beginning of first line', ->
+    context 'first line is empty', ->
+      beforeEach ->
+        firstLine = ''
+        cursorPos = 1
+
+      it 'get first line', ->
+        expect(action()).to.eql firstLine
+
+    context 'cursor on beginning of first line', ->
       beforeEach -> cursorPos = 0
 
       it 'get first line', ->
         expect(action()).to.eql firstLine
 
-    context 'cusor on end of first line', ->
+    context 'cursor on end of first line', ->
       beforeEach -> cursorPos = firstLine.length
 
       it 'get first line', ->
         expect(action()).to.eql firstLine
 
-    context 'cusor on beginning of second line', ->
+    context 'cursor on beginning of second line', ->
       beforeEach -> cursorPos = firstLine.length + 1
 
       it 'get second line', ->
@@ -45,7 +53,7 @@ describe '#getCurrentLine', ->
       it 'get second line', ->
         expect(action()).to.eql secondLine
 
-    context 'cusor on second char of second line', ->
+    context 'cursor on second char of second line', ->
       beforeEach -> cursorPos = firstLine.length + 2
 
       it 'get second line', ->

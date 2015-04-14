@@ -102,7 +102,7 @@ class MarkdownEditor
     match = currentLine.match(beginCodeblockFormat)
     return if text[selectionStart + 1] && text[selectionStart + 1] != "\n"
     return unless match
-    return if @isInnerCodeblock(text, selectionStart)
+    return unless @requireCodeblockEnd(text, selectionStart)
 
     e.preventDefault()
 
@@ -111,34 +111,37 @@ class MarkdownEditor
 
     @options.onInsertedCodeblock?(e)
 
-  isInnerCodeblock: (text, selectionStart) ->
-    innerTopCodeblock = false
-    codeblockBeginPos = null
-    pos = 0
-    while pos <= selectionStart
+  requireCodeblockEnd: (text, selectionStart) ->
+    innerCodeblock = @isInnerCodeblock(text, selectionStart)
+    return false if innerCodeblock
+
+    pos = @getPosBeginningOfLine(text, selectionStart)
+    while pos <= text.length
       line = @getCurrentLine(text, pos)
-      if innerTopCodeblock && line.match(endCodeblockFormat)
-        innerTopCodeblock = false
-      else if !innerTopCodeblock && line.match(beginCodeblockFormat)
-        innerTopCodeblock = true
-        codeblockBeginPos = pos
+      if innerCodeblock && line.match(endCodeblockFormat)
+        return false
+      else if !innerCodeblock && line.match(beginCodeblockFormat)
+        innerCodeblock = true
 
       pos += line.length + 1
 
-    innerBottomCodeblock = false
-    pos = text.length
-    while pos >= selectionStart
+    true
+
+  isInnerCodeblock: (text, selectionStart = @getSelectionStart()) ->
+    innerCodeblock = false
+
+    pos = 0
+    endPos = @getPosBeginningOfLine(text, selectionStart)
+    while pos < endPos
       line = @getCurrentLine(text, pos)
-      if innerBottomCodeblock && line.match(beginCodeblockFormat)
-        innerBottomCodeblock = false
-      else if !innerBottomCodeblock && line.match(endCodeblockFormat)
-        innerBottomCodeblock = true
+      if innerCodeblock && line.match(endCodeblockFormat)
+        innerCodeblock = false
+      else if !innerCodeblock && line.match(beginCodeblockFormat)
+        innerCodeblock = true
 
-      pos -= line.length + 1
+      pos += line.length + 1
 
-    beginPos = @getPosBeginningOfLine(text, selectionStart)
-    currentLineIsBegin = codeblockBeginPos == (if beginPos <= 0 then 0 else beginPos - 1)
-    !(innerTopCodeblock && currentLineIsBegin) || innerBottomCodeblock
+    innerCodeblock
 
   setSelectionRange: (@selectionBegin, @selectionEnd) ->
     @el.setSelectionRange(@selectionBegin, @selectionEnd)
@@ -184,18 +187,19 @@ class MarkdownEditor
 
     beginningPositions
 
-  getCurrentLine: (textArray = @getTextArray(), pos = @getSelectionStart() - 1) ->
-    initPos = pos
+  getCurrentLine: (text = @getText(), initPos = @getSelectionStart() - 1) ->
+    pos = initPos
+    return '' if (!text[pos-1] || text[pos-1] == "\n") && text[pos] == "\n"
 
     beforeChars = ''
-    while textArray[pos] && textArray[pos] != "\n"
-      beforeChars = "#{textArray[pos]}#{beforeChars}"
+    while text[pos] && text[pos] != "\n"
+      beforeChars = "#{text[pos]}#{beforeChars}"
       pos--
 
     pos = initPos + 1
     afterChars = ''
-    while textArray[pos] && textArray[pos] != "\n"
-      afterChars = "#{afterChars}#{textArray[pos]}"
+    while text[pos] && text[pos] != "\n"
+      afterChars = "#{afterChars}#{text[pos]}"
       pos++
 
     "#{beforeChars}#{afterChars}"

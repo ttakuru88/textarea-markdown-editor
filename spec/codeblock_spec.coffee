@@ -46,11 +46,21 @@ describe 'Support codeblock input', ->
 
         context 'input begin codeblock format', ->
           beforeEach ->
-            text += "```abc"
-            action()
+            text += "\n```abc\n\n```"
 
-          it 'do nothing', ->
-            expect(textarea.val()).to.eql "```\n```abc"
+          context 'at first line', ->
+            beforeEach ->
+              currentPos = 3
+              action()
+
+            it 'do nothing', ->
+              expect(textarea.val()).to.eql "```\n\n```abc\n\n```"
+
+          context 'at second line', ->
+            beforeEach -> action()
+
+            it 'do nothing', ->
+              expect(textarea.val()).to.eql "```\n\n```abc\n\n```"
 
         context 'input text', ->
           beforeEach ->

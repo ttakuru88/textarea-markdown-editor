@@ -145,7 +145,7 @@
       if (!match) {
         return;
       }
-      if (this.isInnerCodeblock(text, selectionStart)) {
+      if (!this.requireCodeblockEnd(text, selectionStart)) {
         return;
       }
       e.preventDefault();
@@ -154,35 +154,43 @@
       return typeof (base = this.options).onInsertedCodeblock === "function" ? base.onInsertedCodeblock(e) : void 0;
     };
 
-    MarkdownEditor.prototype.isInnerCodeblock = function(text, selectionStart) {
-      var beginPos, codeblockBeginPos, currentLineIsBegin, innerBottomCodeblock, innerTopCodeblock, line, pos;
-      innerTopCodeblock = false;
-      codeblockBeginPos = null;
-      pos = 0;
-      while (pos <= selectionStart) {
+    MarkdownEditor.prototype.requireCodeblockEnd = function(text, selectionStart) {
+      var innerCodeblock, line, pos;
+      innerCodeblock = this.isInnerCodeblock(text, selectionStart);
+      if (innerCodeblock) {
+        return false;
+      }
+      pos = this.getPosBeginningOfLine(text, selectionStart);
+      while (pos <= text.length) {
         line = this.getCurrentLine(text, pos);
-        if (innerTopCodeblock && line.match(endCodeblockFormat)) {
-          innerTopCodeblock = false;
-        } else if (!innerTopCodeblock && line.match(beginCodeblockFormat)) {
-          innerTopCodeblock = true;
-          codeblockBeginPos = pos;
+        if (innerCodeblock && line.match(endCodeblockFormat)) {
+          return false;
+        } else if (!innerCodeblock && line.match(beginCodeblockFormat)) {
+          innerCodeblock = true;
         }
         pos += line.length + 1;
       }
-      innerBottomCodeblock = false;
-      pos = text.length;
-      while (pos >= selectionStart) {
-        line = this.getCurrentLine(text, pos);
-        if (innerBottomCodeblock && line.match(beginCodeblockFormat)) {
-          innerBottomCodeblock = false;
-        } else if (!innerBottomCodeblock && line.match(endCodeblockFormat)) {
-          innerBottomCodeblock = true;
-        }
-        pos -= line.length + 1;
+      return true;
+    };
+
+    MarkdownEditor.prototype.isInnerCodeblock = function(text, selectionStart) {
+      var endPos, innerCodeblock, line, pos;
+      if (selectionStart == null) {
+        selectionStart = this.getSelectionStart();
       }
-      beginPos = this.getPosBeginningOfLine(text, selectionStart);
-      currentLineIsBegin = codeblockBeginPos === (beginPos <= 0 ? 0 : beginPos - 1);
-      return !(innerTopCodeblock && currentLineIsBegin) || innerBottomCodeblock;
+      innerCodeblock = false;
+      pos = 0;
+      endPos = this.getPosBeginningOfLine(text, selectionStart);
+      while (pos < endPos) {
+        line = this.getCurrentLine(text, pos);
+        if (innerCodeblock && line.match(endCodeblockFormat)) {
+          innerCodeblock = false;
+        } else if (!innerCodeblock && line.match(beginCodeblockFormat)) {
+          innerCodeblock = true;
+        }
+        pos += line.length + 1;
+      }
+      return innerCodeblock;
     };
 
     MarkdownEditor.prototype.setSelectionRange = function(selectionBegin, selectionEnd) {
@@ -278,24 +286,27 @@
       return beginningPositions;
     };
 
-    MarkdownEditor.prototype.getCurrentLine = function(textArray, pos) {
-      var afterChars, beforeChars, initPos;
-      if (textArray == null) {
-        textArray = this.getTextArray();
+    MarkdownEditor.prototype.getCurrentLine = function(text, initPos) {
+      var afterChars, beforeChars, pos;
+      if (text == null) {
+        text = this.getText();
       }
-      if (pos == null) {
-        pos = this.getSelectionStart() - 1;
+      if (initPos == null) {
+        initPos = this.getSelectionStart() - 1;
       }
-      initPos = pos;
+      pos = initPos;
+      if ((!text[pos - 1] || text[pos - 1] === "\n") && text[pos] === "\n") {
+        return '';
+      }
       beforeChars = '';
-      while (textArray[pos] && textArray[pos] !== "\n") {
-        beforeChars = "" + textArray[pos] + beforeChars;
+      while (text[pos] && text[pos] !== "\n") {
+        beforeChars = "" + text[pos] + beforeChars;
         pos--;
       }
       pos = initPos + 1;
       afterChars = '';
-      while (textArray[pos] && textArray[pos] !== "\n") {
-        afterChars = "" + afterChars + textArray[pos];
+      while (text[pos] && text[pos] !== "\n") {
+        afterChars = "" + afterChars + text[pos];
         pos++;
       }
       return "" + beforeChars + afterChars;
