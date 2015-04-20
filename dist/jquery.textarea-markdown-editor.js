@@ -4,7 +4,8 @@
 
   KeyCodes = {
     tab: 9,
-    enter: 13
+    enter: 13,
+    space: 32
   };
 
   MarkdownEditor = (function() {
@@ -48,6 +49,11 @@
               _this.supportCodeblockFormat(e);
             }
           }
+          if (e.keyCode === KeyCodes.space && e.shiftKey) {
+            if (_this.options.list) {
+              _this.toggleCheck(e);
+            }
+          }
           if (e.keyCode === KeyCodes.tab) {
             return _this.onPressTab(e);
           }
@@ -86,6 +92,33 @@
       this.insert(text, "\n" + extSpace + match[1]);
       e.preventDefault();
       return typeof (base = this.options).onInsertedList === "function" ? base.onInsertedList(e) : void 0;
+    };
+
+    MarkdownEditor.prototype.toggleCheck = function(e) {
+      var currentLine, line, matches, pos, text;
+      text = this.getTextArray();
+      currentLine = this.getCurrentLine(text);
+      matches = currentLine.match(listFormat);
+      if (!matches[4]) {
+        return;
+      }
+      line = '';
+      if (matches[4] === 'x') {
+        line = currentLine.replace('[x]', '[ ]');
+      } else {
+        line = currentLine.replace('[ ]', '[x]');
+      }
+      pos = this.getSelectionStart();
+      this.replaceCurrentLine(text, pos, currentLine, line);
+      return e.preventDefault();
+    };
+
+    MarkdownEditor.prototype.replaceCurrentLine = function(text, pos, oldLine, newLine) {
+      var beginPos;
+      beginPos = this.getPosBeginningOfLine(text, pos);
+      text.splice(beginPos, oldLine.length, newLine);
+      this.el.value = text.join('');
+      return this.setSelectionRange(pos, pos);
     };
 
     MarkdownEditor.prototype.supportInputTableFormat = function(e) {

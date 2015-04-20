@@ -1,6 +1,7 @@
 KeyCodes =
   tab: 9
   enter: 13
+  space: 32
 
 class MarkdownEditor
   listFormat     = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/
@@ -24,6 +25,9 @@ class MarkdownEditor
         @supportInputListFormat(e)  if @options.list
         @supportInputTableFormat(e) if @options.table
         @supportCodeblockFormat(e)  if @options.codeblock
+
+      if e.keyCode == KeyCodes.space && e.shiftKey
+        @toggleCheck(e) if @options.list
 
       if e.keyCode == KeyCodes.tab
         @onPressTab(e)
@@ -57,6 +61,31 @@ class MarkdownEditor
     e.preventDefault()
 
     @options.onInsertedList?(e)
+
+  toggleCheck: (e) ->
+    text = @getTextArray()
+
+    currentLine = @getCurrentLine(text)
+    matches = currentLine.match(listFormat)
+    return unless matches[4]
+
+    line = ''
+    if matches[4] == 'x'
+      line = currentLine.replace('[x]', '[ ]')
+    else
+      line = currentLine.replace('[ ]', '[x]')
+
+    pos = @getSelectionStart()
+    @replaceCurrentLine(text, pos, currentLine, line)
+    e.preventDefault()
+
+  replaceCurrentLine: (text, pos, oldLine, newLine) ->
+    beginPos = @getPosBeginningOfLine(text, pos)
+    text.splice(beginPos, oldLine.length, newLine)
+
+    @el.value = text.join('')
+
+    @setSelectionRange(pos, pos)
 
   supportInputTableFormat: (e) ->
     text = @getTextArray()

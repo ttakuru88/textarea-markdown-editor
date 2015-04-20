@@ -28,6 +28,54 @@ describe 'Support list input', ->
 
         textarea.trigger(enterEvent)
 
+    context 'press space', ->
+      beforeEach -> keyCode = 32
+
+      context 'checked checkbox line', ->
+        beforeEach -> line = '- [x] a'
+
+        it 'do nothing', ->
+          action()
+          expect(textarea.val()).to.eql '- [x] a'
+
+      context 'checkbox line', ->
+        beforeEach -> line = '- [ ] a'
+
+        it 'do nothing', ->
+          action()
+          expect(textarea.val()).to.eql '- [ ] a'
+
+      context 'list line', ->
+        beforeEach -> line = '- a'
+
+        it 'do nothing', ->
+          action()
+          expect(textarea.val()).to.eql '- a'
+
+      context 'and press shift key', ->
+        beforeEach -> shiftKey = true
+
+        context 'checked checkbox line', ->
+          beforeEach -> line = '- [x] a'
+
+          it 'uncheck', ->
+            action()
+            expect(textarea.val()).to.eql '- [ ] a'
+
+        context 'checkbox line', ->
+          beforeEach -> line = '- [ ] a'
+
+          it 'check', ->
+            action()
+            expect(textarea.val()).to.eql '- [x] a'
+
+        context 'list line', ->
+          beforeEach -> line = '- a'
+
+          it 'do nothing', ->
+            action()
+            expect(textarea.val()).to.eql '- a'
+
     context 'press tab', ->
       beforeEach -> keyCode = 9
 
