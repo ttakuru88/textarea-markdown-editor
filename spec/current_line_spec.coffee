@@ -24,10 +24,20 @@ describe '#getCurrentLine', ->
     context 'first line is empty', ->
       beforeEach ->
         firstLine = ''
-        cursorPos = 1
 
-      it 'get first line', ->
-        expect(action()).to.eql firstLine
+      context 'cursor on first line', ->
+        beforeEach ->
+          cursorPos = 0
+
+        it 'get first line', ->
+          expect(action()).to.eql firstLine
+
+      context 'cursor on second line', ->
+        beforeEach ->
+          cursorPos = 1
+
+        it 'get second line', ->
+          expect(action()).to.eql secondLine
 
     context 'cursor on beginning of first line', ->
       beforeEach -> cursorPos = 0

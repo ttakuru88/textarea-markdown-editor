@@ -213,7 +213,7 @@
       }
       innerCodeblock = false;
       pos = 0;
-      endPos = this.getPosBeginningOfLine(text, selectionStart);
+      endPos = this.getPosBeginningOfLine(text, selectionStart) - 1;
       while (pos < endPos) {
         line = this.getCurrentLine(text, pos);
         if (innerCodeblock && line.match(endCodeblockFormat)) {
@@ -328,9 +328,6 @@
         initPos = this.getSelectionStart() - 1;
       }
       pos = initPos;
-      if ((!text[pos - 1] || text[pos - 1] === "\n") && text[pos] === "\n") {
-        return '';
-      }
       beforeChars = '';
       while (text[pos] && text[pos] !== "\n") {
         beforeChars = "" + text[pos] + beforeChars;

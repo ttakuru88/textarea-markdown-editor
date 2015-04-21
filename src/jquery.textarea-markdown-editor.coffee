@@ -160,7 +160,7 @@ class MarkdownEditor
     innerCodeblock = false
 
     pos = 0
-    endPos = @getPosBeginningOfLine(text, selectionStart)
+    endPos = @getPosBeginningOfLine(text, selectionStart) - 1
     while pos < endPos
       line = @getCurrentLine(text, pos)
       if innerCodeblock && line.match(endCodeblockFormat)
@@ -218,7 +218,6 @@ class MarkdownEditor
 
   getCurrentLine: (text = @getText(), initPos = @getSelectionStart() - 1) ->
     pos = initPos
-    return '' if (!text[pos-1] || text[pos-1] == "\n") && text[pos] == "\n"
 
     beforeChars = ''
     while text[pos] && text[pos] != "\n"
