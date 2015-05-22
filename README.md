@@ -4,6 +4,8 @@
 
 [Demo](http://hai3.net/textarea-markdown-editor/)
 
+![](http://hai3.net/textarea-markdown-editor/markdown-editor-demo.gif)
+
 ## Install
 
 via Bower
