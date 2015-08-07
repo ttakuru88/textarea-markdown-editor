@@ -1,3 +1,7 @@
+## v0.5.0
+
+* Table shortcut phrase.
+
 ## v0.4.0
 
 * Support codeblock.
