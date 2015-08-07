@@ -26,14 +26,14 @@
     endCodeblockFormat = /^((```+)|(~~~+))$/;
 
     function MarkdownEditor(el, options1) {
-      var i, j, ref;
+      var i, k, ref;
       this.el = el;
       this.options = options1;
       this.onPressTab = bind(this.onPressTab, this);
       this.$el = $(this.el);
       this.selectionBegin = this.selectionEnd = 0;
       this.tabSpaces = '';
-      for (i = j = 0, ref = this.options.tabSize; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
+      for (i = k = 0, ref = this.options.tabSize; 0 <= ref ? k < ref : k > ref; i = 0 <= ref ? ++k : --k) {
         this.tabSpaces += ' ';
       }
       this.$el.on('keydown.markdownEditor', (function(_this) {
@@ -49,9 +49,12 @@
               _this.supportCodeblockFormat(e);
             }
           }
-          if (e.keyCode === KeyCodes.space && e.shiftKey) {
+          if (e.keyCode === KeyCodes.space && e.shiftKey && !e.ctrlKey && !e.metaKey) {
             if (_this.options.list) {
               _this.toggleCheck(e);
+            }
+            if (_this.options.autoTable) {
+              _this.makeTable(e);
             }
           }
           if (e.keyCode === KeyCodes.tab) {
@@ -99,6 +102,9 @@
       text = this.getTextArray();
       currentLine = this.getCurrentLine(text);
       matches = currentLine.match(listFormat);
+      if (!matches) {
+        return;
+      }
       if (!matches[4]) {
         return;
       }
@@ -122,7 +128,7 @@
     };
 
     MarkdownEditor.prototype.supportInputTableFormat = function(e) {
-      var base, char, currentLine, i, j, k, l, len, match, pos, prevPos, ref, ref1, row, rows, selectionStart, sep, text;
+      var base, char, currentLine, i, k, l, len, m, match, pos, prevPos, ref, ref1, row, rows, selectionStart, sep, text;
       text = this.getTextArray();
       currentLine = this.replaceEscapedPipe(this.getCurrentLine(text));
       selectionStart = this.getSelectionStart();
@@ -142,8 +148,8 @@
       }
       e.preventDefault();
       rows = -1;
-      for (j = 0, len = currentLine.length; j < len; j++) {
-        char = currentLine[j];
+      for (k = 0, len = currentLine.length; k < len; k++) {
+        char = currentLine[k];
         if (char === '|') {
           rows++;
         }
@@ -152,12 +158,12 @@
       sep = '';
       if (!this.isTableBody(text)) {
         sep = "\n|";
-        for (i = k = 0, ref = rows; 0 <= ref ? k < ref : k > ref; i = 0 <= ref ? ++k : --k) {
+        for (i = l = 0, ref = rows; 0 <= ref ? l < ref : l > ref; i = 0 <= ref ? ++l : --l) {
           sep += ' --- |';
         }
       }
       row = "\n|";
-      for (i = l = 0, ref1 = rows; 0 <= ref1 ? l < ref1 : l > ref1; i = 0 <= ref1 ? ++l : --l) {
+      for (i = m = 0, ref1 = rows; 0 <= ref1 ? m < ref1 : m > ref1; i = 0 <= ref1 ? ++m : --m) {
         row += '  |';
       }
       text = this.insert(text, sep + row, prevPos);
@@ -224,6 +230,36 @@
         pos += line.length + 1;
       }
       return innerCodeblock;
+    };
+
+    MarkdownEditor.prototype.makeTable = function(e) {
+      var colsCount, i, j, k, l, line, m, matches, n, pos, ref, ref1, ref2, ref3, rowsCount, table, text;
+      text = this.getTextArray();
+      line = this.getCurrentLine(text);
+      matches = line.match(/^(\d+)x(\d+)$/);
+      if (!matches) {
+        return;
+      }
+      e.preventDefault();
+      rowsCount = matches[1];
+      colsCount = matches[2];
+      table = "|";
+      for (i = k = 0, ref = rowsCount; 0 <= ref ? k < ref : k > ref; i = 0 <= ref ? ++k : --k) {
+        table += '  |';
+      }
+      table += "\n|";
+      for (i = l = 0, ref1 = rowsCount; 0 <= ref1 ? l < ref1 : l > ref1; i = 0 <= ref1 ? ++l : --l) {
+        table += ' --- |';
+      }
+      for (i = m = 0, ref2 = colsCount - 1; 0 <= ref2 ? m < ref2 : m > ref2; i = 0 <= ref2 ? ++m : --m) {
+        table += "\n|";
+        for (j = n = 0, ref3 = rowsCount; 0 <= ref3 ? n < ref3 : n > ref3; j = 0 <= ref3 ? ++n : --n) {
+          table += "  |";
+        }
+      }
+      pos = this.getPosBeginningOfLine(text);
+      this.replaceCurrentLine(text, pos, line, table);
+      return this.setSelectionRange(pos + 2, pos + 2);
     };
 
     MarkdownEditor.prototype.setSelectionRange = function(selectionBegin, selectionEnd) {
@@ -297,7 +333,7 @@
     };
 
     MarkdownEditor.prototype.getPosBeginningOfLines = function(text, startPos, endPos) {
-      var beginningPositions, j, pos, ref, ref1;
+      var beginningPositions, k, pos, ref, ref1;
       if (startPos == null) {
         startPos = this.getSelectionStart();
       }
@@ -307,7 +343,7 @@
       beginningPositions = [this.getPosBeginningOfLine(text, startPos)];
       startPos = this.getPosEndOfLine(startPos) + 1;
       if (startPos < endPos) {
-        for (pos = j = ref = startPos, ref1 = endPos; ref <= ref1 ? j <= ref1 : j >= ref1; pos = ref <= ref1 ? ++j : --j) {
+        for (pos = k = ref = startPos, ref1 = endPos; ref <= ref1 ? k <= ref1 : k >= ref1; pos = ref <= ref1 ? ++k : --k) {
           if (!text[pos]) {
             break;
           }
@@ -378,15 +414,15 @@
     };
 
     MarkdownEditor.prototype.tabToSpace = function(e) {
-      var beginPos, currentLine, currentPos, dPos, i, j, k, l, len, listPositions, pos, ref, ref1, ref2, text;
+      var beginPos, currentLine, currentPos, dPos, i, k, l, len, listPositions, m, pos, ref, ref1, ref2, text;
       text = this.getTextArray();
       listPositions = [];
       if (this.options.list) {
         dPos = 0;
         currentPos = this.getSelectionStart();
         ref = this.getPosBeginningOfLines(text, currentPos);
-        for (j = 0, len = ref.length; j < len; j++) {
-          pos = ref[j];
+        for (k = 0, len = ref.length; k < len; k++) {
+          pos = ref[k];
           pos += dPos;
           currentLine = this.getCurrentLine(text, pos);
           if (currentLine.match(listFormat) && !currentLine.match(hrFormat)) {
@@ -397,7 +433,7 @@
                 dPos -= this.options.tabSize;
               }
             } else {
-              for (i = k = 0, ref1 = this.options.tabSize; 0 <= ref1 ? k < ref1 : k > ref1; i = 0 <= ref1 ? ++k : --k) {
+              for (i = l = 0, ref1 = this.options.tabSize; 0 <= ref1 ? l < ref1 : l > ref1; i = 0 <= ref1 ? ++l : --l) {
                 text.splice(pos, 0, ' ');
               }
               dPos += this.options.tabSize;
@@ -410,7 +446,7 @@
         } else {
           if (dPos < 0) {
             beginPos = this.getPosBeginningOfLine(text, currentPos + dPos);
-            for (i = l = -1, ref2 = -this.options.tabSize; -1 <= ref2 ? l <= ref2 : l >= ref2; i = -1 <= ref2 ? ++l : --l) {
+            for (i = m = -1, ref2 = -this.options.tabSize; -1 <= ref2 ? m <= ref2 : m >= ref2; i = -1 <= ref2 ? ++m : --m) {
               if ((!text[currentPos + i] || text[currentPos + i] === "\n") && listPositions[0] > beginPos) {
                 currentPos = listPositions[0] - dPos;
                 break;
@@ -585,7 +621,8 @@
         tabToSpace: true,
         list: true,
         table: true,
-        codeblock: true
+        codeblock: true,
+        autoTable: true
       }, options);
       this.each(function() {
         return $(this).data('markdownEditor', new MarkdownEditor(this, options));

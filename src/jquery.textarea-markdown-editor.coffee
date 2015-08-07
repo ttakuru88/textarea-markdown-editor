@@ -26,8 +26,9 @@ class MarkdownEditor
         @supportInputTableFormat(e) if @options.table
         @supportCodeblockFormat(e)  if @options.codeblock
 
-      if e.keyCode == KeyCodes.space && e.shiftKey
+      if e.keyCode == KeyCodes.space && e.shiftKey && !e.ctrlKey && !e.metaKey
         @toggleCheck(e) if @options.list
+        @makeTable(e) if @options.autoTable
 
       if e.keyCode == KeyCodes.tab
         @onPressTab(e)
@@ -67,6 +68,7 @@ class MarkdownEditor
 
     currentLine = @getCurrentLine(text)
     matches = currentLine.match(listFormat)
+    return unless matches
     return unless matches[4]
 
     line = ''
@@ -171,6 +173,34 @@ class MarkdownEditor
       pos += line.length + 1
 
     innerCodeblock
+
+  makeTable: (e) ->
+    text = @getTextArray()
+    line = @getCurrentLine(text)
+
+    matches = line.match(/^(\d+)x(\d+)$/)
+    return unless matches
+
+    e.preventDefault()
+
+    rowsCount = matches[1]
+    colsCount = matches[2]
+
+    table = "|"
+    for i in [0...rowsCount]
+      table += '  |'
+    table += "\n|"
+    for i in [0...rowsCount]
+      table += ' --- |'
+
+    for i in [0...(colsCount - 1)]
+      table += "\n|"
+      for j in [0...rowsCount]
+        table += "  |"
+
+    pos = @getPosBeginningOfLine(text)
+    @replaceCurrentLine(text, pos, line, table)
+    @setSelectionRange(pos + 2, pos + 2)
 
   setSelectionRange: (@selectionBegin, @selectionEnd) ->
     @el.setSelectionRange(@selectionBegin, @selectionEnd)
@@ -412,6 +442,7 @@ $.fn.markdownEditor = (options = {}, args = undefined) ->
       list: true
       table: true
       codeblock: true
+      autoTable: true
     , options
 
     @each ->
