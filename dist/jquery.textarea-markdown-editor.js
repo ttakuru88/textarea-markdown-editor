@@ -159,7 +159,7 @@
       if (!this.isTableBody(text)) {
         sep = "\n|";
         for (i = l = 0, ref = rows; 0 <= ref ? l < ref : l > ref; i = 0 <= ref ? ++l : --l) {
-          sep += ' --- |';
+          sep += " " + this.options.tableSeparator + " |";
         }
       }
       row = "\n|";
@@ -622,7 +622,8 @@
         list: true,
         table: true,
         codeblock: true,
-        autoTable: true
+        autoTable: true,
+        tableSeparator: '---'
       }, options);
       this.each(function() {
         return $(this).data('markdownEditor', new MarkdownEditor(this, options));

@@ -112,7 +112,7 @@ class MarkdownEditor
     unless @isTableBody(text)
       sep = "\n|"
       for i in [0...rows]
-        sep += ' --- |'
+        sep += " #{@options.tableSeparator} |"
 
     row = "\n|"
     for i in [0...rows]
@@ -443,6 +443,7 @@ $.fn.markdownEditor = (options = {}, args = undefined) ->
       table: true
       codeblock: true
       autoTable: true
+      tableSeparator: '---'
     , options
 
     @each ->
