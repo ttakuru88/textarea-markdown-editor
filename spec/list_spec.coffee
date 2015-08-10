@@ -102,19 +102,35 @@ describe 'Support list input', ->
             expect(textarea.val()).to.eql '    - aaa'
 
       context 'selection range', ->
-        beforeEach ->
-          line = "- abc\n  - def"
-          selectionStart = 1
-          selectionEnd = 13
+        context 'list lines', ->
+          beforeEach ->
+            line = "- abc\n  - def"
+            selectionStart = 1
+            selectionEnd = 13
 
-          action()
+            action()
 
-        it 'insert space to all beginning of lines', ->
-          expect(textarea.val()).to.eql "    - abc\n      - def"
+          it 'insert space to all beginning of lines', ->
+            expect(textarea.val()).to.eql "    - abc\n      - def"
 
-        it 'selected indent lines', ->
-          expect(markdownEditor.selectionBegin).to.eql 0
-          expect(markdownEditor.selectionEnd).to.eql 21
+          it 'selected indent lines', ->
+            expect(markdownEditor.selectionBegin).to.eql 0
+            expect(markdownEditor.selectionEnd).to.eql 21
+
+        context 'not list lines', ->
+          beforeEach ->
+            line = "12345\n  abcde"
+            selectionStart = 1
+            selectionEnd = 13
+
+            action()
+
+          it 'insert space to all beginning of lines', ->
+            expect(textarea.val()).to.eql "    12345\n      abcde"
+
+          it 'selected indent lines', ->
+            expect(markdownEditor.selectionBegin).to.eql 0
+            expect(markdownEditor.selectionEnd).to.eql 21
 
       context 'with shift key', ->
         beforeEach ->

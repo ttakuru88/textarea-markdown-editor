@@ -435,50 +435,57 @@
     };
 
     MarkdownEditor.prototype.tabToSpace = function(e) {
-      var beginPos, currentLine, currentPos, dPos, i, k, l, len, listPositions, m, pos, ref, ref1, ref2, text;
+      var beginningOfLines, currentLine, currentPos, text;
       text = this.getTextArray();
-      listPositions = [];
-      if (this.options.list) {
-        dPos = 0;
-        currentPos = this.getSelectionStart();
-        ref = this.getPosBeginningOfLines(text, currentPos);
-        for (k = 0, len = ref.length; k < len; k++) {
-          pos = ref[k];
-          pos += dPos;
-          currentLine = this.getCurrentLine(text, pos);
-          if (currentLine.match(listFormat) && !currentLine.match(hrFormat)) {
-            listPositions.push(pos);
-            if (e.shiftKey) {
-              if (currentLine.indexOf(this.tabSpaces) === 0) {
-                text.splice(pos, this.options.tabSize);
-                dPos -= this.options.tabSize;
-              }
-            } else {
-              for (i = l = 0, ref1 = this.options.tabSize; 0 <= ref1 ? l < ref1 : l > ref1; i = 0 <= ref1 ? ++l : --l) {
-                text.splice(pos, 0, ' ');
-              }
-              dPos += this.options.tabSize;
-            }
-          }
-        }
-        this.el.value = text.join('');
-        if (listPositions.length > 1) {
-          this.setSelectionRange(listPositions[0], this.getPosEndOfLine(text, listPositions[listPositions.length - 1]));
+      currentPos = this.getSelectionStart();
+      beginningOfLines = this.getPosBeginningOfLines(text, currentPos);
+      if (beginningOfLines.length <= 1) {
+        currentLine = this.getCurrentLine(text, beginningOfLines[0]);
+        if (this.options.list && currentLine.match(listFormat) && !currentLine.match(hrFormat)) {
+          return this.insertSpacesToBeginningOfLines(text, currentPos, beginningOfLines, e.shiftKey);
         } else {
-          if (dPos < 0) {
-            beginPos = this.getPosBeginningOfLine(text, currentPos + dPos);
-            for (i = m = -1, ref2 = -this.options.tabSize; -1 <= ref2 ? m <= ref2 : m >= ref2; i = -1 <= ref2 ? ++m : --m) {
-              if ((!text[currentPos + i] || text[currentPos + i] === "\n") && listPositions[0] > beginPos) {
-                currentPos = listPositions[0] - dPos;
-                break;
-              }
-            }
+          return this.insert(text, this.tabSpaces);
+        }
+      } else {
+        return this.insertSpacesToBeginningOfLines(text, currentPos, beginningOfLines, e.shiftKey);
+      }
+    };
+
+    MarkdownEditor.prototype.insertSpacesToBeginningOfLines = function(text, currentPos, beginningOfLines, isBack) {
+      var beginPos, currentLine, dPos, i, k, l, len, listPositions, m, pos, ref, ref1;
+      listPositions = [];
+      dPos = 0;
+      for (k = 0, len = beginningOfLines.length; k < len; k++) {
+        pos = beginningOfLines[k];
+        pos += dPos;
+        currentLine = this.getCurrentLine(text, pos);
+        listPositions.push(pos);
+        if (isBack) {
+          if (currentLine.indexOf(this.tabSpaces) === 0) {
+            text.splice(pos, this.options.tabSize);
+            dPos -= this.options.tabSize;
           }
-          this.setSelectionRange(currentPos + dPos, currentPos + dPos);
+        } else {
+          for (i = l = 0, ref = this.options.tabSize; 0 <= ref ? l < ref : l > ref; i = 0 <= ref ? ++l : --l) {
+            text.splice(pos, 0, ' ');
+          }
+          dPos += this.options.tabSize;
         }
       }
-      if (!listPositions.length) {
-        return this.insert(text, this.tabSpaces);
+      this.el.value = text.join('');
+      if (listPositions.length > 1) {
+        return this.setSelectionRange(listPositions[0], this.getPosEndOfLine(text, listPositions[listPositions.length - 1]));
+      } else {
+        if (dPos < 0) {
+          beginPos = this.getPosBeginningOfLine(text, currentPos + dPos);
+          for (i = m = -1, ref1 = -this.options.tabSize; -1 <= ref1 ? m <= ref1 : m >= ref1; i = -1 <= ref1 ? ++m : --m) {
+            if ((!text[currentPos + i] || text[currentPos + i] === "\n") && listPositions[0] > beginPos) {
+              currentPos = listPositions[0] - dPos;
+              break;
+            }
+          }
+        }
+        return this.setSelectionRange(currentPos + dPos, currentPos + dPos);
       }
     };
 

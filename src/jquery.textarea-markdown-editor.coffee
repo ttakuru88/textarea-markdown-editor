@@ -304,43 +304,50 @@ class MarkdownEditor
 
   tabToSpace: (e) ->
     text = @getTextArray()
+    currentPos = @getSelectionStart()
+    beginningOfLines = @getPosBeginningOfLines(text, currentPos)
 
-    listPositions = []
-    if @options.list
-      dPos = 0
-      currentPos = @getSelectionStart()
-
-      for pos in @getPosBeginningOfLines(text, currentPos)
-        pos += dPos
-        currentLine = @getCurrentLine(text, pos)
-
-        if currentLine.match(listFormat) && !currentLine.match(hrFormat)
-          listPositions.push(pos)
-
-          if e.shiftKey
-            if currentLine.indexOf(@tabSpaces) == 0
-              text.splice(pos, @options.tabSize)
-              dPos -= @options.tabSize
-          else
-            for i in [0...@options.tabSize]
-              text.splice(pos, 0, ' ')
-
-            dPos += @options.tabSize
-
-      @el.value = text.join('')
-      if listPositions.length > 1
-        @setSelectionRange(listPositions[0], @getPosEndOfLine(text, listPositions[listPositions.length-1]))
+    if beginningOfLines.length <= 1
+      currentLine = @getCurrentLine(text, beginningOfLines[0])
+      if @options.list && currentLine.match(listFormat) && !currentLine.match(hrFormat)
+        @insertSpacesToBeginningOfLines(text, currentPos, beginningOfLines, e.shiftKey)
       else
-        if dPos < 0
-          beginPos = @getPosBeginningOfLine(text, currentPos + dPos)
-          for i in [-1..-@options.tabSize]
-            if (!text[currentPos+i] || text[currentPos+i] == "\n") && listPositions[0] > beginPos
-              currentPos = listPositions[0] - dPos
-              break
+        @insert(text, @tabSpaces)
+    else
+      @insertSpacesToBeginningOfLines(text, currentPos, beginningOfLines, e.shiftKey)
 
-        @setSelectionRange(currentPos + dPos, currentPos + dPos)
+  insertSpacesToBeginningOfLines: (text, currentPos, beginningOfLines, isBack) ->
+    listPositions = []
+    dPos = 0
 
-    @insert(text, @tabSpaces) unless listPositions.length
+    for pos in beginningOfLines
+      pos += dPos
+      currentLine = @getCurrentLine(text, pos)
+
+      listPositions.push(pos)
+
+      if isBack
+        if currentLine.indexOf(@tabSpaces) == 0
+          text.splice(pos, @options.tabSize)
+          dPos -= @options.tabSize
+      else
+        for i in [0...@options.tabSize]
+          text.splice(pos, 0, ' ')
+
+        dPos += @options.tabSize
+
+    @el.value = text.join('')
+    if listPositions.length > 1
+      @setSelectionRange(listPositions[0], @getPosEndOfLine(text, listPositions[listPositions.length-1]))
+    else
+      if dPos < 0
+        beginPos = @getPosBeginningOfLine(text, currentPos + dPos)
+        for i in [-1..-@options.tabSize]
+          if (!text[currentPos+i] || text[currentPos+i] == "\n") && listPositions[0] > beginPos
+            currentPos = listPositions[0] - dPos
+            break
+
+      @setSelectionRange(currentPos + dPos, currentPos + dPos)
 
   moveToPrevCell: (text, pos = @getSelectionStart() - 1) ->
     overSep = false
