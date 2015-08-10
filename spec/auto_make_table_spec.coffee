@@ -40,3 +40,24 @@ describe 'Auto make table', ->
 
       it 'make table', ->
         expect(textarea.val()).to.eql "|  |  |  |\n| --- | --- | --- |\n|  |  |  |"
+
+    context '":3x2"', ->
+      beforeEach ->
+        action(':3x2')
+
+      it 'make table and align left', ->
+        expect(textarea.val()).to.eql "|  |  |  |\n| :--- | :--- | :--- |\n|  |  |  |"
+
+    context '"3x2:"', ->
+      beforeEach ->
+        action('3x2:')
+
+      it 'make table and align right', ->
+        expect(textarea.val()).to.eql "|  |  |  |\n| ---: | ---: | ---: |\n|  |  |  |"
+
+    context '":3x2:"', ->
+      beforeEach ->
+        action(':3x2:')
+
+      it 'make table and align center', ->
+        expect(textarea.val()).to.eql "|  |  |  |\n| :---: | :---: | :---: |\n|  |  |  |"

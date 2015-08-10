@@ -11,6 +11,7 @@ class MarkdownEditor
   emptyRowFormat = /^\|(\s*?\|)+\s*$/
   beginCodeblockFormat = /^((```+)|(~~~+))(\S*\s*)$/
   endCodeblockFormat   = /^((```+)|(~~~+))$/
+  makingTableFormat = /^(:?)(\d+)x(\d+)(:?)$/
 
   constructor: (@el, @options) ->
     @$el = $(@el)
@@ -178,29 +179,38 @@ class MarkdownEditor
     text = @getTextArray()
     line = @getCurrentLine(text)
 
-    matches = line.match(/^(\d+)x(\d+)$/)
+    matches = line.match(makingTableFormat)
     return unless matches
 
     e.preventDefault()
 
-    rowsCount = matches[1]
-    colsCount = matches[2]
+    alignLeft = !!matches[1].length
+    alignRight = !!matches[4].length
+
+    table = @buildTable(matches[2], matches[3], {alignLeft: alignLeft, alignRight: alignRight})
+
+    pos = @getPosBeginningOfLine(text)
+    @replaceCurrentLine(text, pos, line, table)
+    @setSelectionRange(pos + 2, pos + 2)
+
+  buildTable: (rowsCount, colsCount, options = {}) ->
+    separator = "---"
+    separator = ":#{separator}" if options.alignLeft
+    separator = "#{separator}:" if options.alignRight
 
     table = "|"
     for i in [0...rowsCount]
       table += '  |'
     table += "\n|"
     for i in [0...rowsCount]
-      table += ' --- |'
+      table += " #{separator} |"
 
     for i in [0...(colsCount - 1)]
       table += "\n|"
       for j in [0...rowsCount]
         table += "  |"
 
-    pos = @getPosBeginningOfLine(text)
-    @replaceCurrentLine(text, pos, line, table)
-    @setSelectionRange(pos + 2, pos + 2)
+    table
 
   setSelectionRange: (@selectionBegin, @selectionEnd) ->
     @el.setSelectionRange(@selectionBegin, @selectionEnd)

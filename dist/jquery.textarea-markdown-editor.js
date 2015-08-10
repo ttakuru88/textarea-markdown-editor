@@ -9,7 +9,7 @@
   };
 
   MarkdownEditor = (function() {
-    var beginCodeblockFormat, emptyRowFormat, endCodeblockFormat, hrFormat, listFormat, rowFormat, rowSepFormat;
+    var beginCodeblockFormat, emptyRowFormat, endCodeblockFormat, hrFormat, listFormat, makingTableFormat, rowFormat, rowSepFormat;
 
     listFormat = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/;
 
@@ -24,6 +24,8 @@
     beginCodeblockFormat = /^((```+)|(~~~+))(\S*\s*)$/;
 
     endCodeblockFormat = /^((```+)|(~~~+))$/;
+
+    makingTableFormat = /^(:?)(\d+)x(\d+)(:?)$/;
 
     function MarkdownEditor(el, options1) {
       var i, k, ref;
@@ -233,23 +235,44 @@
     };
 
     MarkdownEditor.prototype.makeTable = function(e) {
-      var colsCount, i, j, k, l, line, m, matches, n, pos, ref, ref1, ref2, ref3, rowsCount, table, text;
+      var alignLeft, alignRight, line, matches, pos, table, text;
       text = this.getTextArray();
       line = this.getCurrentLine(text);
-      matches = line.match(/^(\d+)x(\d+)$/);
+      matches = line.match(makingTableFormat);
       if (!matches) {
         return;
       }
       e.preventDefault();
-      rowsCount = matches[1];
-      colsCount = matches[2];
+      alignLeft = !!matches[1].length;
+      alignRight = !!matches[4].length;
+      table = this.buildTable(matches[2], matches[3], {
+        alignLeft: alignLeft,
+        alignRight: alignRight
+      });
+      pos = this.getPosBeginningOfLine(text);
+      this.replaceCurrentLine(text, pos, line, table);
+      return this.setSelectionRange(pos + 2, pos + 2);
+    };
+
+    MarkdownEditor.prototype.buildTable = function(rowsCount, colsCount, options) {
+      var i, j, k, l, m, n, ref, ref1, ref2, ref3, separator, table;
+      if (options == null) {
+        options = {};
+      }
+      separator = "---";
+      if (options.alignLeft) {
+        separator = ":" + separator;
+      }
+      if (options.alignRight) {
+        separator = separator + ":";
+      }
       table = "|";
       for (i = k = 0, ref = rowsCount; 0 <= ref ? k < ref : k > ref; i = 0 <= ref ? ++k : --k) {
         table += '  |';
       }
       table += "\n|";
       for (i = l = 0, ref1 = rowsCount; 0 <= ref1 ? l < ref1 : l > ref1; i = 0 <= ref1 ? ++l : --l) {
-        table += ' --- |';
+        table += " " + separator + " |";
       }
       for (i = m = 0, ref2 = colsCount - 1; 0 <= ref2 ? m < ref2 : m > ref2; i = 0 <= ref2 ? ++m : --m) {
         table += "\n|";
@@ -257,9 +280,7 @@
           table += "  |";
         }
       }
-      pos = this.getPosBeginningOfLine(text);
-      this.replaceCurrentLine(text, pos, line, table);
-      return this.setSelectionRange(pos + 2, pos + 2);
+      return table;
     };
 
     MarkdownEditor.prototype.setSelectionRange = function(selectionBegin, selectionEnd) {
