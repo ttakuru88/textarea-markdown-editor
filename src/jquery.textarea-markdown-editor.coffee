@@ -438,10 +438,12 @@ class MarkdownEditor
     @$el.off('keydown.markdownEditor').data('markdownEditor', null)
     @$el = null
 
-$.fn.markdownEditor = (options = {}, args = undefined) ->
+$.fn.markdownEditor = (options = {}) ->
   if typeof options == 'string'
-    @each ->
-      $(@).data('markdownEditor')[options]?(args)
+    args = Array.prototype.slice.call(arguments).slice(1)
+
+    markdownEditor = @data('markdownEditor')
+    return markdownEditor[options]?.apply(markdownEditor, args)
   else
     options = $.extend
       tabSize: 4

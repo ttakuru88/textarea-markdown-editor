@@ -621,18 +621,15 @@
 
   })();
 
-  $.fn.markdownEditor = function(options, args) {
+  $.fn.markdownEditor = function(options) {
+    var args, markdownEditor, ref;
     if (options == null) {
       options = {};
     }
-    if (args == null) {
-      args = void 0;
-    }
     if (typeof options === 'string') {
-      return this.each(function() {
-        var base;
-        return typeof (base = $(this).data('markdownEditor'))[options] === "function" ? base[options](args) : void 0;
-      });
+      args = Array.prototype.slice.call(arguments).slice(1);
+      markdownEditor = this.data('markdownEditor');
+      return (ref = markdownEditor[options]) != null ? ref.apply(markdownEditor, args) : void 0;
     } else {
       options = $.extend({
         tabSize: 4,
