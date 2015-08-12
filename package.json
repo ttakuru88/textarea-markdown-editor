@@ -1,6 +1,6 @@
 {
   "name": "jquery.textarea-markdown-Editor",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "",
   "main": "dist/jquery.textarea-markdown-Editor.js",
   "dependencies": {
