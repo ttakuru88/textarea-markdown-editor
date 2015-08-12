@@ -266,11 +266,11 @@ class MarkdownEditor
   replaceEscapedPipe: (text) ->
     text.replace(/\\\|/g, '..')
 
-  isTableHeader: (text = @getTextArray(), pos = @getSelectionStart() - 1) ->
-    ep = pos = @getPosEndOfLine(text, pos) + 1
+  isTableHeader: (text = @getTextArray(), pos = @getSelectionStart()) ->
+    pos = @getPosEndOfLine(text, pos)
     line = @getCurrentLine(text, pos)
 
-    line.match(rowSepFormat)
+    !!line.match(rowSepFormat)
 
   isTableBody: (textArray = @getTextArray(), pos = @getSelectionStart() - 1) ->
     line = @replaceEscapedPipe @getCurrentLine(textArray, pos)

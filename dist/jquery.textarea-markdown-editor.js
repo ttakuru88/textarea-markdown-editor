@@ -359,16 +359,16 @@
     };
 
     MarkdownEditor.prototype.isTableHeader = function(text, pos) {
-      var ep, line;
+      var line;
       if (text == null) {
         text = this.getTextArray();
       }
       if (pos == null) {
-        pos = this.getSelectionStart() - 1;
+        pos = this.getSelectionStart();
       }
-      ep = pos = this.getPosEndOfLine(text, pos) + 1;
+      pos = this.getPosEndOfLine(text, pos);
       line = this.getCurrentLine(text, pos);
-      return line.match(rowSepFormat);
+      return !!line.match(rowSepFormat);
     };
 
     MarkdownEditor.prototype.isTableBody = function(textArray, pos) {
