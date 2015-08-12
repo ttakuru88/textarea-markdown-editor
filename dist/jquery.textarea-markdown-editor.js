@@ -9,7 +9,7 @@
   };
 
   MarkdownEditor = (function() {
-    var beginCodeblockFormat, emptyRowFormat, endCodeblockFormat, hrFormat, listFormat, makingTableFormat, rowFormat, rowSepFormat;
+    var beginCodeblockFormat, emptyRowFormat, endCodeblockFormat, hrFormat, listFormat, makingTableFormat, numberFormat, rowFormat, rowSepFormat;
 
     listFormat = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/;
 
@@ -26,6 +26,8 @@
     endCodeblockFormat = /^((```+)|(~~~+))$/;
 
     makingTableFormat = /^(:?)(\d+)x(\d+)(:?)$/;
+
+    numberFormat = /^\d+$/;
 
     function MarkdownEditor(el, options1) {
       var i, k, ref;
@@ -63,6 +65,9 @@
             }
             if (_this.options.csvToTable) {
               _this.csvToTable(e, text, currentLine);
+            }
+            if (_this.options.sortTable) {
+              _this.sortTable(e, text, currentLine);
             }
           }
           if (e.keyCode === KeyCodes.tab) {
@@ -334,6 +339,95 @@
       }
       text.splice(startPos, endPos - startPos, table);
       return this.el.value = text.join('');
+    };
+
+    MarkdownEditor.prototype.sortTable = function(e, text, currentLine) {
+      var body, col, data, k, len, line, prevPos, ref;
+      if (this.isSelectRange() || !this.isTableHeader(text)) {
+        return;
+      }
+      e.preventDefault();
+      prevPos = this.getSelectionStart();
+      col = this.getCurrentCol(text, currentLine) - 1;
+      data = this.getCurrentTableData(text);
+      data.lines.sort((function(_this) {
+        return function(a, b) {
+          if (_this.isEmpty(a.values[col])) {
+            return -1;
+          }
+          if (_this.isEmpty(b.values[col])) {
+            return 1;
+          }
+          if (a.values[col] === b.values[col]) {
+            return 0;
+          }
+          if (a.values[col] < b.values[col]) {
+            return -1;
+          } else {
+            return 1;
+          }
+        };
+      })(this));
+      body = '';
+      ref = data.lines;
+      for (k = 0, len = ref.length; k < len; k++) {
+        line = ref[k];
+        body += line.text + "\n";
+      }
+      text.splice(data.bodyStart, body.length, body);
+      this.el.value = text.join('');
+      return this.setSelectionRange(prevPos, prevPos);
+    };
+
+    MarkdownEditor.prototype.getCurrentCol = function(text, currentLine) {
+      var count, i, k, pos, ref, row;
+      row = this.replaceEscapedPipe(currentLine);
+      pos = this.getSelectionStart() - this.getPosBeginningOfLine(text, this.getSelectionStart());
+      count = 0;
+      for (i = k = 0, ref = Math.min(pos, row.length); 0 <= ref ? k < ref : k > ref; i = 0 <= ref ? ++k : --k) {
+        if (row[i] === '|') {
+          count++;
+        }
+      }
+      return count;
+    };
+
+    MarkdownEditor.prototype.isEmpty = function(v) {
+      return v === null || v === void 0 || v === '';
+    };
+
+    MarkdownEditor.prototype.getCurrentTableData = function(text) {
+      var base, data, i, k, len, line, newLineLeft, pos, v, values;
+      pos = this.getSelectionStart();
+      newLineLeft = 2;
+      while (newLineLeft > 0 && (text[pos] != null)) {
+        if (text[pos] === "\n") {
+          newLineLeft--;
+        }
+        pos++;
+      }
+      data = {
+        bodyStart: pos,
+        lines: []
+      };
+      while ((text[pos] != null) && this.isTableBody(text, pos)) {
+        line = this.getCurrentLine(text, pos);
+        values = this.replaceEscapedPipe(line.slice(1, -1)).split('|');
+        for (i = k = 0, len = values.length; k < len; i = ++k) {
+          v = values[i];
+          values[i] = this.trim(v);
+          if (typeof (base = values[i]).match === "function" ? base.match(numberFormat) : void 0) {
+            values[i] = +values[i];
+          }
+        }
+        data.lines.push({
+          text: line,
+          values: values
+        });
+        pos += line.length + 1;
+      }
+      data.bodyEnd = pos;
+      return data;
     };
 
     MarkdownEditor.prototype.trim = function(str) {
@@ -714,7 +808,8 @@
         codeblock: true,
         autoTable: true,
         tableSeparator: '---',
-        csvToTable: true
+        csvToTable: true,
+        sortTable: true
       }, options);
       this.each(function() {
         return $(this).data('markdownEditor', new MarkdownEditor(this, options));

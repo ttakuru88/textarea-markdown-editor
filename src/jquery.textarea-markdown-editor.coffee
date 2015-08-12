@@ -12,6 +12,7 @@ class MarkdownEditor
   beginCodeblockFormat = /^((```+)|(~~~+))(\S*\s*)$/
   endCodeblockFormat   = /^((```+)|(~~~+))$/
   makingTableFormat = /^(:?)(\d+)x(\d+)(:?)$/
+  numberFormat = /^\d+$/
 
   constructor: (@el, @options) ->
     @$el = $(@el)
@@ -34,6 +35,7 @@ class MarkdownEditor
         @toggleCheck(e, text, currentLine) if @options.list
         @makeTable(e, text, currentLine) if @options.autoTable
         @csvToTable(e, text, currentLine) if @options.csvToTable
+        @sortTable(e, text, currentLine) if @options.sortTable
 
       if e.keyCode == KeyCodes.tab
         @onPressTab(e)
@@ -250,6 +252,67 @@ class MarkdownEditor
 
     text.splice(startPos, endPos - startPos, table)
     @el.value = text.join('')
+
+  sortTable: (e, text, currentLine) ->
+    return if @isSelectRange() || !@isTableHeader(text)
+    e.preventDefault()
+
+    prevPos = @getSelectionStart()
+    col = @getCurrentCol(text, currentLine) - 1
+    data = @getCurrentTableData(text)
+    data.lines.sort (a, b) =>
+      return -1 if @isEmpty(a.values[col])
+      return 1 if @isEmpty(b.values[col])
+      return 0 if a.values[col] == b.values[col]
+      return if a.values[col] < b.values[col] then -1 else 1
+
+    body = ''
+    for line in data.lines
+      body += "#{line.text}\n"
+
+    text.splice(data.bodyStart, body.length, body)
+    @el.value = text.join('')
+    @setSelectionRange(prevPos, prevPos)
+
+  getCurrentCol: (text, currentLine) ->
+    row = @replaceEscapedPipe(currentLine)
+    pos = @getSelectionStart() - @getPosBeginningOfLine(text, @getSelectionStart())
+
+    count = 0
+    for i in [0...Math.min(pos, row.length)]
+      count++ if row[i] == '|'
+
+    count
+
+  isEmpty: (v) ->
+    v == null || v == undefined || v == ''
+
+  getCurrentTableData: (text) ->
+    pos = @getSelectionStart()
+    newLineLeft = 2
+    while newLineLeft > 0 && text[pos]?
+      newLineLeft-- if text[pos] == "\n"
+      pos++
+
+    data =
+      bodyStart: pos
+      lines: []
+    while text[pos]? && @isTableBody(text, pos)
+      line = @getCurrentLine(text, pos)
+
+      values = @replaceEscapedPipe(line.slice(1, -1)).split('|')
+      for v,i in values
+        values[i] = @trim(v)
+        values[i] = +values[i] if values[i].match?(numberFormat)
+
+      data.lines.push
+        text:  line
+        values: values
+
+      pos += line.length + 1
+
+    data.bodyEnd = pos
+    data
 
   trim: (str) ->
     str.replace(/^\s+/, '').replace(/\s+$/, '')
@@ -512,6 +575,7 @@ $.fn.markdownEditor = (options = {}) ->
       autoTable: true
       tableSeparator: '---'
       csvToTable: true
+      sortTable: true
     , options
 
     @each ->
