@@ -1,7 +1,6 @@
 describe 'Auto make table', ->
     textarea = null
     action = null
-    currentPos = null
     markdownEditor = null
     keyCode = 32 # space
 
@@ -9,21 +8,21 @@ describe 'Auto make table', ->
       textarea = $('<textarea>').markdownEditor()
       markdownEditor = textarea.data('markdownEditor')
 
-      action = (text) ->
+      action = (text, selectionStart = text.length, selectionEnd = text.length) ->
         enterEvent = $.Event('keydown', keyCode: keyCode, shiftKey: true)
 
         textarea.val(text)
-        pos = if currentPos? then currentPos else text.length
-        markdownEditor.getSelectionStart = ->
-          pos
-        markdownEditor.selectionBegin = markdownEditor.selectionEnd = pos
+
+        markdownEditor.getSelectionStart = -> selectionStart
+        markdownEditor.getSelectionEnd = -> selectionEnd
+        markdownEditor.selectionBegin = selectionStart
+        markdownEditor.selectionEnd = selectionEnd
 
         textarea.trigger(enterEvent)
 
     afterEach ->
       textarea = null
       action = null
-      currentPos = null
       markdownEditor = null
       keyCode = 32
 
@@ -35,11 +34,19 @@ describe 'Auto make table', ->
         expect(textarea.val()).to.eql 'axc'
 
     context '"3x2"', ->
-      beforeEach ->
-        action('3x2')
+      context 'select range', ->
+        beforeEach ->
+          action('3x2', 1, 2)
 
-      it 'make table', ->
-        expect(textarea.val()).to.eql "|  |  |  |\n| --- | --- | --- |\n|  |  |  |"
+        it 'nothing do', ->
+          expect(textarea.val()).to.eql '3x2'
+
+      context 'unselect range', ->
+        beforeEach ->
+          action('3x2')
+
+        it 'make table', ->
+          expect(textarea.val()).to.eql "|  |  |  |\n| --- | --- | --- |\n|  |  |  |"
 
     context '":3x2"', ->
       beforeEach ->

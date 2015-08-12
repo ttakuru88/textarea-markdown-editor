@@ -40,6 +40,7 @@
       }
       this.$el.on('keydown.markdownEditor', (function(_this) {
         return function(e) {
+          var currentLine, text;
           if (e.keyCode === KeyCodes.enter && !e.shiftKey) {
             if (_this.options.list) {
               _this.supportInputListFormat(e);
@@ -52,11 +53,16 @@
             }
           }
           if (e.keyCode === KeyCodes.space && e.shiftKey && !e.ctrlKey && !e.metaKey) {
+            text = _this.getTextArray();
+            currentLine = _this.getCurrentLine(text);
             if (_this.options.list) {
-              _this.toggleCheck(e);
+              _this.toggleCheck(e, text, currentLine);
             }
             if (_this.options.autoTable) {
-              _this.makeTable(e);
+              _this.makeTable(e, text, currentLine);
+            }
+            if (_this.options.csvToTable) {
+              _this.csvToTable(e, text, currentLine);
             }
           }
           if (e.keyCode === KeyCodes.tab) {
@@ -99,10 +105,8 @@
       return typeof (base = this.options).onInsertedList === "function" ? base.onInsertedList(e) : void 0;
     };
 
-    MarkdownEditor.prototype.toggleCheck = function(e) {
-      var currentLine, line, matches, pos, text;
-      text = this.getTextArray();
-      currentLine = this.getCurrentLine(text);
+    MarkdownEditor.prototype.toggleCheck = function(e, text, currentLine) {
+      var line, matches, pos;
       matches = currentLine.match(listFormat);
       if (!matches) {
         return;
@@ -234,11 +238,12 @@
       return innerCodeblock;
     };
 
-    MarkdownEditor.prototype.makeTable = function(e) {
-      var alignLeft, alignRight, line, matches, pos, table, text;
-      text = this.getTextArray();
-      line = this.getCurrentLine(text);
-      matches = line.match(makingTableFormat);
+    MarkdownEditor.prototype.makeTable = function(e, text, currentLine) {
+      var alignLeft, alignRight, matches, pos, table;
+      if (this.isSelectRange()) {
+        return;
+      }
+      matches = currentLine.match(makingTableFormat);
       if (!matches) {
         return;
       }
@@ -250,7 +255,7 @@
         alignRight: alignRight
       });
       pos = this.getPosBeginningOfLine(text);
-      this.replaceCurrentLine(text, pos, line, table);
+      this.replaceCurrentLine(text, pos, currentLine, table);
       return this.setSelectionRange(pos + 2, pos + 2);
     };
 
@@ -281,6 +286,66 @@
         }
       }
       return table;
+    };
+
+    MarkdownEditor.prototype.csvToTable = function(e, text, currentLine) {
+      var cell, csvLines, endPos, i, j, k, l, len, len1, len2, line, lines, m, n, ref, rows, selectedText, startPos, table;
+      selectedText = this.getSelectedText();
+      lines = selectedText.split("\n");
+      if (lines.length <= 1) {
+        return;
+      }
+      startPos = null;
+      endPos = this.getSelectionStart();
+      csvLines = [];
+      for (k = 0, len = lines.length; k < len; k++) {
+        line = lines[k];
+        rows = line.split(',');
+        if (rows.length > 1) {
+          csvLines.push(rows);
+          if (startPos == null) {
+            startPos = endPos;
+          }
+        } else if (csvLines.length > 0) {
+          break;
+        }
+        endPos += line.length + 1;
+      }
+      if (csvLines <= 1) {
+        return;
+      }
+      e.preventDefault();
+      table = '';
+      for (i = l = 0, len1 = csvLines.length; l < len1; i = ++l) {
+        line = csvLines[i];
+        table += "|";
+        for (m = 0, len2 = line.length; m < len2; m++) {
+          cell = line[m];
+          table += " " + (this.trim(cell)) + " |";
+        }
+        table += "\n";
+        if (i === 0) {
+          table += "|";
+          for (j = n = 0, ref = line.length; 0 <= ref ? n < ref : n > ref; j = 0 <= ref ? ++n : --n) {
+            table += " " + this.options.tableSeparator + " |";
+          }
+          table += "\n";
+        }
+      }
+      text.splice(startPos, endPos - startPos, table);
+      return this.el.value = text.join('');
+    };
+
+    MarkdownEditor.prototype.trim = function(str) {
+      return str.replace(/^\s+/, '').replace(/\s+$/, '');
+    };
+
+    MarkdownEditor.prototype.isSelectRange = function() {
+      return this.getSelectionStart() !== this.getSelectionEnd();
+    };
+
+    MarkdownEditor.prototype.getSelectedText = function() {
+      return this.getText().slice(this.getSelectionStart(), this.getSelectionEnd());
     };
 
     MarkdownEditor.prototype.setSelectionRange = function(selectionBegin, selectionEnd) {
@@ -648,7 +713,8 @@
         table: true,
         codeblock: true,
         autoTable: true,
-        tableSeparator: '---'
+        tableSeparator: '---',
+        csvToTable: true
       }, options);
       this.each(function() {
         return $(this).data('markdownEditor', new MarkdownEditor(this, options));

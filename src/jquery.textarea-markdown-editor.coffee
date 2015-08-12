@@ -28,8 +28,12 @@ class MarkdownEditor
         @supportCodeblockFormat(e)  if @options.codeblock
 
       if e.keyCode == KeyCodes.space && e.shiftKey && !e.ctrlKey && !e.metaKey
-        @toggleCheck(e) if @options.list
-        @makeTable(e) if @options.autoTable
+        text = @getTextArray()
+        currentLine = @getCurrentLine(text)
+
+        @toggleCheck(e, text, currentLine) if @options.list
+        @makeTable(e, text, currentLine) if @options.autoTable
+        @csvToTable(e, text, currentLine) if @options.csvToTable
 
       if e.keyCode == KeyCodes.tab
         @onPressTab(e)
@@ -64,10 +68,7 @@ class MarkdownEditor
 
     @options.onInsertedList?(e)
 
-  toggleCheck: (e) ->
-    text = @getTextArray()
-
-    currentLine = @getCurrentLine(text)
+  toggleCheck: (e, text, currentLine) ->
     matches = currentLine.match(listFormat)
     return unless matches
     return unless matches[4]
@@ -175,12 +176,11 @@ class MarkdownEditor
 
     innerCodeblock
 
-  makeTable: (e) ->
-    text = @getTextArray()
-    line = @getCurrentLine(text)
-
-    matches = line.match(makingTableFormat)
+  makeTable: (e, text, currentLine) ->
+    return if @isSelectRange()
+    matches = currentLine.match(makingTableFormat)
     return unless matches
+
 
     e.preventDefault()
 
@@ -190,7 +190,7 @@ class MarkdownEditor
     table = @buildTable(matches[2], matches[3], {alignLeft: alignLeft, alignRight: alignRight})
 
     pos = @getPosBeginningOfLine(text)
-    @replaceCurrentLine(text, pos, line, table)
+    @replaceCurrentLine(text, pos, currentLine, table)
     @setSelectionRange(pos + 2, pos + 2)
 
   buildTable: (rowsCount, colsCount, options = {}) ->
@@ -211,6 +211,54 @@ class MarkdownEditor
         table += "  |"
 
     table
+
+  csvToTable: (e, text, currentLine) ->
+    selectedText = @getSelectedText()
+    lines = selectedText.split("\n")
+    return if lines.length <= 1
+
+    startPos = null
+    endPos = @getSelectionStart()
+    csvLines = []
+    for line in lines
+      rows = line.split(',')
+
+      if rows.length > 1
+        csvLines.push(rows)
+        startPos ?= endPos
+      else if csvLines.length > 0
+        break
+
+      endPos += line.length + 1
+
+    return if csvLines <= 1
+
+    e.preventDefault()
+
+    table = ''
+    for line, i in csvLines
+      table += "|"
+      for cell in line
+        table += " #{@trim(cell)} |"
+      table += "\n"
+
+      if i == 0
+        table += "|"
+        for j in [0...line.length]
+          table += " #{@options.tableSeparator} |"
+        table += "\n"
+
+    text.splice(startPos, endPos - startPos, table)
+    @el.value = text.join('')
+
+  trim: (str) ->
+    str.replace(/^\s+/, '').replace(/\s+$/, '')
+
+  isSelectRange: ->
+    @getSelectionStart() != @getSelectionEnd()
+
+  getSelectedText: ->
+    @getText().slice(@getSelectionStart(), @getSelectionEnd())
 
   setSelectionRange: (@selectionBegin, @selectionEnd) ->
     @el.setSelectionRange(@selectionBegin, @selectionEnd)
@@ -463,6 +511,7 @@ $.fn.markdownEditor = (options = {}) ->
       codeblock: true
       autoTable: true
       tableSeparator: '---'
+      csvToTable: true
     , options
 
     @each ->
