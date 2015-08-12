@@ -342,7 +342,7 @@
     };
 
     MarkdownEditor.prototype.sortTable = function(e, text, currentLine) {
-      var body, col, data, k, len, line, prevPos, ref;
+      var asc, body, col, data, i, k, l, len, line, prevPos, ref, ref1;
       if (this.isSelectRange() || !this.isTableHeader(text)) {
         return;
       }
@@ -350,33 +350,45 @@
       prevPos = this.getSelectionStart();
       col = this.getCurrentCol(text, currentLine) - 1;
       data = this.getCurrentTableData(text);
+      asc = false;
+      for (i = k = 1, ref = data.lines.length; 1 <= ref ? k < ref : k > ref; i = 1 <= ref ? ++k : --k) {
+        if (0 < this.compare(data.lines[i - 1].values[col], data.lines[i].values[col])) {
+          asc = true;
+          break;
+        }
+      }
       data.lines.sort((function(_this) {
         return function(a, b) {
-          if (_this.isEmpty(a.values[col])) {
-            return -1;
-          }
-          if (_this.isEmpty(b.values[col])) {
-            return 1;
-          }
-          if (a.values[col] === b.values[col]) {
-            return 0;
-          }
-          if (a.values[col] < b.values[col]) {
-            return -1;
-          } else {
-            return 1;
-          }
+          return _this.compare(a.values[col], b.values[col], asc);
         };
       })(this));
       body = '';
-      ref = data.lines;
-      for (k = 0, len = ref.length; k < len; k++) {
-        line = ref[k];
+      ref1 = data.lines;
+      for (l = 0, len = ref1.length; l < len; l++) {
+        line = ref1[l];
         body += line.text + "\n";
       }
       text.splice(data.bodyStart, body.length, body);
       this.el.value = text.join('');
       return this.setSelectionRange(prevPos, prevPos);
+    };
+
+    MarkdownEditor.prototype.compare = function(a, b, asc) {
+      var x;
+      if (asc == null) {
+        asc = true;
+      }
+      x = asc ? 1 : -1;
+      if (this.isEmpty(a)) {
+        return -1 * x;
+      }
+      if (this.isEmpty(b)) {
+        return 1 * x;
+      }
+      if (a === b) {
+        return 0;
+      }
+      return (a < b ? -1 : 1) * x;
     };
 
     MarkdownEditor.prototype.getCurrentCol = function(text, currentLine) {

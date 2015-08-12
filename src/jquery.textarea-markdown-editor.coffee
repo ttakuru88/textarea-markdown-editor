@@ -260,11 +260,15 @@ class MarkdownEditor
     prevPos = @getSelectionStart()
     col = @getCurrentCol(text, currentLine) - 1
     data = @getCurrentTableData(text)
+
+    asc = false
+    for i in [1...data.lines.length]
+      if 0 < @compare(data.lines[i-1].values[col], data.lines[i].values[col])
+        asc = true
+        break
+
     data.lines.sort (a, b) =>
-      return -1 if @isEmpty(a.values[col])
-      return 1 if @isEmpty(b.values[col])
-      return 0 if a.values[col] == b.values[col]
-      return if a.values[col] < b.values[col] then -1 else 1
+      @compare(a.values[col], b.values[col], asc)
 
     body = ''
     for line in data.lines
@@ -273,6 +277,14 @@ class MarkdownEditor
     text.splice(data.bodyStart, body.length, body)
     @el.value = text.join('')
     @setSelectionRange(prevPos, prevPos)
+
+  compare: (a, b, asc = true) ->
+    x = if asc then 1 else -1
+
+    return -1 * x if @isEmpty(a)
+    return 1 * x if @isEmpty(b)
+    return 0 if a == b
+    return (if a < b then -1 else 1) * x
 
   getCurrentCol: (text, currentLine) ->
     row = @replaceEscapedPipe(currentLine)

@@ -3,15 +3,17 @@ describe 'Sort table', ->
     action = null
     markdownEditor = null
     text = null
+    setText = null
 
     beforeEach ->
       textarea = $('<textarea>').markdownEditor()
       markdownEditor = textarea.data('markdownEditor')
 
+      setText = (text) ->
+        textarea.val(text)
+
       action = (pos) ->
         enterEvent = $.Event('keydown', keyCode: 32, shiftKey: true)
-
-        textarea.val(text)
 
         markdownEditor.getSelectionStart = -> pos
         markdownEditor.getSelectionEnd = -> pos
@@ -25,10 +27,11 @@ describe 'Sort table', ->
       action = null
       markdownEditor = null
       text = null
+      setText = null
 
     context 'single table', ->
       beforeEach ->
-        text = "|a|b|\n|---|---|\n|h|9|\n|b|3|\n|f|1|"
+        setText "|a|b|\n|---|---|\n|h|9|\n|b|3|\n|f|1|"
 
       context 'first col', ->
         beforeEach ->
@@ -38,8 +41,17 @@ describe 'Sort table', ->
           expect(textarea.val()).to.eql "|a|b|\n|---|---|\n|b|3|\n|f|1|\n|h|9|\n"
 
       context 'second col', ->
-        beforeEach ->
-          action(3)
+        context 'once', ->
+          beforeEach ->
+            action(3)
 
-        it 'sort by second col', ->
-          expect(textarea.val()).to.eql "|a|b|\n|---|---|\n|f|1|\n|b|3|\n|h|9|\n"
+          it 'sort by second col asc', ->
+            expect(textarea.val()).to.eql "|a|b|\n|---|---|\n|f|1|\n|b|3|\n|h|9|\n"
+
+        context 'twice', ->
+          beforeEach ->
+            action(3)
+            action(3)
+
+          it 'sort by second col desc', ->
+            expect(textarea.val()).to.eql "|a|b|\n|---|---|\n|h|9|\n|b|3|\n|f|1|\n"
