@@ -27,7 +27,7 @@
 
     makingTableFormat = /^(:?)(\d+)x(\d+)(:?)$/;
 
-    numberFormat = /^\d+$/;
+    numberFormat = /^-?\d+[\d\.]*$/;
 
     function MarkdownEditor(el, options1) {
       var i, k, ref;

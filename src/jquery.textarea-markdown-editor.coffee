@@ -12,7 +12,7 @@ class MarkdownEditor
   beginCodeblockFormat = /^((```+)|(~~~+))(\S*\s*)$/
   endCodeblockFormat   = /^((```+)|(~~~+))$/
   makingTableFormat = /^(:?)(\d+)x(\d+)(:?)$/
-  numberFormat = /^\d+$/
+  numberFormat = /^-?\d+[\d\.]*$/
 
   constructor: (@el, @options) ->
     @$el = $(@el)
