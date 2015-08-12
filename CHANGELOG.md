@@ -1,3 +1,7 @@
+## v0.6.0
+
+* Table sortable.
+
 ## v0.5.0
 
 * Table shortcut phrase.
