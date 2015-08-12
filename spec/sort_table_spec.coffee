@@ -55,3 +55,14 @@ describe 'Sort table', ->
 
           it 'sort by second col desc', ->
             expect(textarea.val()).to.eql "|a|b|\n|---|---|\n|h|9|\n|b|3|\n|f|1|\n"
+
+    context 'double table', ->
+        beforeEach ->
+          setText "|a|b|\n|---|---|\n|h|9|\n|b|3|\n|f|1|\n\n|a|b|\n|---|---|\n|h|9|\n|b|3|\n|f|1|"
+
+        context 'first col', ->
+          beforeEach ->
+            action(1)
+
+          it 'sort by first col on first table', ->
+            expect(textarea.val()).to.eql "|a|b|\n|---|---|\n|b|3|\n|f|1|\n|h|9|\n\n|a|b|\n|---|---|\n|h|9|\n|b|3|\n|f|1|"

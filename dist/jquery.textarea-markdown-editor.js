@@ -423,7 +423,10 @@
         lines: []
       };
       while ((text[pos] != null) && this.isTableBody(text, pos)) {
-        line = this.getCurrentLine(text, pos);
+        line = this.getCurrentLine(text, pos - 1);
+        if (line.length <= 0) {
+          break;
+        }
         values = this.replaceEscapedPipe(line.slice(1, -1)).split('|');
         for (i = k = 0, len = values.length; k < len; i = ++k) {
           v = values[i];

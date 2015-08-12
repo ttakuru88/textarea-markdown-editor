@@ -309,8 +309,10 @@ class MarkdownEditor
     data =
       bodyStart: pos
       lines: []
+
     while text[pos]? && @isTableBody(text, pos)
-      line = @getCurrentLine(text, pos)
+      line = @getCurrentLine(text, pos - 1)
+      break if line.length <= 0
 
       values = @replaceEscapedPipe(line.slice(1, -1)).split('|')
       for v,i in values
