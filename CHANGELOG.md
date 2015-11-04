@@ -1,3 +1,7 @@
+## v0.7.0
+
+* Text for uploading image.
+
 ## v0.6.0
 
 * Table sortable.
