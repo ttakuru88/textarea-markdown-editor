@@ -16,7 +16,9 @@
     $editor.markdownEditor({
       onInsertedList: function(){ console.log("inserted list"); },
       onInsertedTable: function(){ console.log("inserted table"); },
-      onInsertedCodeblock: function(){ console.log("inserted codeblock"); }
+      onInsertedCodeblock: function(){ console.log("inserted codeblock"); },
+      onMadeTable: function(){ console.log("made table"); },
+      onSortedTable: function(){ console.log("sorted table"); }
     }).focus();
 
    t= setInterval(function(){

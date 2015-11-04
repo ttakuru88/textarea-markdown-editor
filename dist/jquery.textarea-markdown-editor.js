@@ -244,7 +244,7 @@
     };
 
     MarkdownEditor.prototype.makeTable = function(e, text, currentLine) {
-      var alignLeft, alignRight, matches, pos, table;
+      var alignLeft, alignRight, base, matches, pos, table;
       if (this.isSelectRange()) {
         return;
       }
@@ -261,7 +261,8 @@
       });
       pos = this.getPosBeginningOfLine(text);
       this.replaceCurrentLine(text, pos, currentLine, table);
-      return this.setSelectionRange(pos + 2, pos + 2);
+      this.setSelectionRange(pos + 2, pos + 2);
+      return typeof (base = this.options).onMadeTable === "function" ? base.onMadeTable(e) : void 0;
     };
 
     MarkdownEditor.prototype.buildTable = function(rowsCount, colsCount, options) {
@@ -294,7 +295,7 @@
     };
 
     MarkdownEditor.prototype.csvToTable = function(e, text, currentLine) {
-      var cell, csvLines, endPos, i, j, k, l, len, len1, len2, line, lines, m, n, ref, rows, selectedText, startPos, table;
+      var base, cell, csvLines, endPos, i, j, k, l, len, len1, len2, line, lines, m, n, ref, rows, selectedText, startPos, table;
       selectedText = this.getSelectedText();
       lines = selectedText.split("\n");
       if (lines.length <= 1) {
@@ -338,11 +339,12 @@
         }
       }
       text.splice(startPos, endPos - startPos, table);
-      return this.el.value = text.join('');
+      this.el.value = text.join('');
+      return typeof (base = this.options).onMadeTable === "function" ? base.onMadeTable(e) : void 0;
     };
 
     MarkdownEditor.prototype.sortTable = function(e, text, currentLine) {
-      var asc, body, col, data, i, k, l, len, line, prevPos, ref, ref1;
+      var asc, base, body, col, data, i, k, l, len, line, prevPos, ref, ref1;
       if (this.isSelectRange() || !this.isTableHeader(text)) {
         return;
       }
@@ -370,7 +372,8 @@
       }
       text.splice(data.bodyStart, body.length, body);
       this.el.value = text.join('');
-      return this.setSelectionRange(prevPos, prevPos);
+      this.setSelectionRange(prevPos, prevPos);
+      return typeof (base = this.options).onSortedTable === "function" ? base.onSortedTable(e) : void 0;
     };
 
     MarkdownEditor.prototype.compare = function(a, b, asc) {
@@ -867,6 +870,8 @@
         onInsertedList: null,
         onInsertedTable: null,
         onInsertedCodeblock: null,
+        onSortedTable: null,
+        onMadeTable: null,
         tabToSpace: true,
         list: true,
         table: true,

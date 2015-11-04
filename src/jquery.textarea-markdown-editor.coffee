@@ -195,6 +195,8 @@ class MarkdownEditor
     @replaceCurrentLine(text, pos, currentLine, table)
     @setSelectionRange(pos + 2, pos + 2)
 
+    @options.onMadeTable?(e)
+
   buildTable: (rowsCount, colsCount, options = {}) ->
     separator = "---"
     separator = ":#{separator}" if options.alignLeft
@@ -253,6 +255,8 @@ class MarkdownEditor
     text.splice(startPos, endPos - startPos, table)
     @el.value = text.join('')
 
+    @options.onMadeTable?(e)
+
   sortTable: (e, text, currentLine) ->
     return if @isSelectRange() || !@isTableHeader(text)
     e.preventDefault()
@@ -277,6 +281,8 @@ class MarkdownEditor
     text.splice(data.bodyStart, body.length, body)
     @el.value = text.join('')
     @setSelectionRange(prevPos, prevPos)
+
+    @options.onSortedTable?(e)
 
   compare: (a, b, asc = true) ->
     x = if asc then 1 else -1
@@ -620,6 +626,8 @@ $.fn.markdownEditor = (options = {}) ->
       onInsertedList: null
       onInsertedTable: null
       onInsertedCodeblock: null
+      onSortedTable: null
+      onMadeTable: null
       tabToSpace: true
       list: true
       table: true
