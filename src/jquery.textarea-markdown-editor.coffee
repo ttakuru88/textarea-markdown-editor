@@ -570,6 +570,44 @@ class MarkdownEditor
     @$el.off('keydown.markdownEditor').data('markdownEditor', null)
     @$el = null
 
+  startUpload: (name) ->
+    text = @getTextArray()
+    pos = @getSelectionStart()
+
+    insertText = @buildUploadingText(name)
+    insertText = "\n#{insertText}" if pos > 0 && text[pos-1] != "\n"
+    insertText = "#{insertText}\n" if pos < text.length - 1 && text[pos] != "\n"
+
+    @insert(text, insertText, pos)
+
+  cancelUpload: (name) ->
+    @el.value = @getText().replace(@buildUploadingText(name), '')
+
+  buildUploadingText: (name) ->
+    @options.uploadingFormat.replace("${name}", name)
+
+  finishUpload: (name, url, options = {}) ->
+    text = @getText()
+    alt = if options.alt? then options.alt else ''
+    imgMarkdown = "![#{alt}](#{url})"
+    imgMarkdown = "[#{imgMarkdown}](#{options.href})" if options.href?
+    uploadingText = @buildUploadingText(name)
+
+    uploadingTextPos = text.indexOf(uploadingText)
+    if uploadingTextPos >= 0
+      selectionStart = @getSelectionStart()
+      selectionEnd = @getSelectionEnd()
+
+      @el.value = text.replace(uploadingText, imgMarkdown)
+
+      if uploadingTextPos + uploadingText.length < selectionStart
+        diff = imgMarkdown.length - uploadingText.length
+        @setSelectionRange(selectionStart + diff, selectionEnd + diff)
+      else
+        @setSelectionRange(selectionStart, selectionEnd)
+    else
+      @insert(@getTextArray(), imgMarkdown)
+
 $.fn.markdownEditor = (options = {}) ->
   if typeof options == 'string'
     args = Array.prototype.slice.call(arguments).slice(1)
@@ -590,6 +628,7 @@ $.fn.markdownEditor = (options = {}) ->
       tableSeparator: '---'
       csvToTable: true
       sortTable: true
+      uploadingFormat: "![Uploading... ${name}]()"
     , options
 
     @each ->

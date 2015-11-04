@@ -457,9 +457,9 @@
       return this.getText().slice(this.getSelectionStart(), this.getSelectionEnd());
     };
 
-    MarkdownEditor.prototype.setSelectionRange = function(selectionBegin, selectionEnd) {
+    MarkdownEditor.prototype.setSelectionRange = function(selectionBegin, selectionEnd1) {
       this.selectionBegin = selectionBegin;
-      this.selectionEnd = selectionEnd;
+      this.selectionEnd = selectionEnd1;
       return this.el.setSelectionRange(this.selectionBegin, this.selectionEnd);
     };
 
@@ -798,6 +798,56 @@
       return this.$el = null;
     };
 
+    MarkdownEditor.prototype.startUpload = function(name) {
+      var insertText, pos, text;
+      text = this.getTextArray();
+      pos = this.getSelectionStart();
+      insertText = this.buildUploadingText(name);
+      if (pos > 0 && text[pos - 1] !== "\n") {
+        insertText = "\n" + insertText;
+      }
+      if (pos < text.length - 1 && text[pos] !== "\n") {
+        insertText = insertText + "\n";
+      }
+      return this.insert(text, insertText, pos);
+    };
+
+    MarkdownEditor.prototype.cancelUpload = function(name) {
+      return this.el.value = this.getText().replace(this.buildUploadingText(name), '');
+    };
+
+    MarkdownEditor.prototype.buildUploadingText = function(name) {
+      return this.options.uploadingFormat.replace("${name}", name);
+    };
+
+    MarkdownEditor.prototype.finishUpload = function(name, url, options) {
+      var alt, diff, imgMarkdown, selectionEnd, selectionStart, text, uploadingText, uploadingTextPos;
+      if (options == null) {
+        options = {};
+      }
+      text = this.getText();
+      alt = options.alt != null ? options.alt : '';
+      imgMarkdown = "![" + alt + "](" + url + ")";
+      if (options.href != null) {
+        imgMarkdown = "[" + imgMarkdown + "](" + options.href + ")";
+      }
+      uploadingText = this.buildUploadingText(name);
+      uploadingTextPos = text.indexOf(uploadingText);
+      if (uploadingTextPos >= 0) {
+        selectionStart = this.getSelectionStart();
+        selectionEnd = this.getSelectionEnd();
+        this.el.value = text.replace(uploadingText, imgMarkdown);
+        if (uploadingTextPos + uploadingText.length < selectionStart) {
+          diff = imgMarkdown.length - uploadingText.length;
+          return this.setSelectionRange(selectionStart + diff, selectionEnd + diff);
+        } else {
+          return this.setSelectionRange(selectionStart, selectionEnd);
+        }
+      } else {
+        return this.insert(this.getTextArray(), imgMarkdown);
+      }
+    };
+
     return MarkdownEditor;
 
   })();
@@ -824,7 +874,8 @@
         autoTable: true,
         tableSeparator: '---',
         csvToTable: true,
-        sortTable: true
+        sortTable: true,
+        uploadingFormat: "![Uploading... ${name}]()"
       }, options);
       this.each(function() {
         return $(this).data('markdownEditor', new MarkdownEditor(this, options));
