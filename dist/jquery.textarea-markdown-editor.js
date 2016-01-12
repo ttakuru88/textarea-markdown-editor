@@ -820,34 +820,36 @@
     };
 
     MarkdownEditor.prototype.buildUploadingText = function(name) {
-      return this.options.uploadingFormat.replace("${name}", name);
+      return this.options.uploadingFormat(name);
     };
 
-    MarkdownEditor.prototype.finishUpload = function(name, url, options) {
-      var alt, diff, imgMarkdown, selectionEnd, selectionStart, text, uploadingText, uploadingTextPos;
+    MarkdownEditor.prototype.finishUpload = function(name, options) {
+      var diff, finishedUploadText, selectionEnd, selectionStart, text, uploadingText, uploadingTextPos;
       if (options == null) {
         options = {};
       }
       text = this.getText();
-      alt = options.alt != null ? options.alt : '';
-      imgMarkdown = "![" + alt + "](" + url + ")";
-      if (options.href != null) {
-        imgMarkdown = "[" + imgMarkdown + "](" + options.href + ")";
+      finishedUploadText = options.text || '';
+      if (finishedUploadText.length <= 0 && options.url || options.alt) {
+        finishedUploadText = "![" + (options.alt || '') + "](" + (options.url || '') + ")";
+        if (options.href != null) {
+          finishedUploadText = "[" + finishedUploadText + "](" + options.href + ")";
+        }
       }
       uploadingText = this.buildUploadingText(name);
       uploadingTextPos = text.indexOf(uploadingText);
       if (uploadingTextPos >= 0) {
         selectionStart = this.getSelectionStart();
         selectionEnd = this.getSelectionEnd();
-        this.el.value = text.replace(uploadingText, imgMarkdown);
+        this.el.value = text.replace(uploadingText, finishedUploadText);
         if (uploadingTextPos + uploadingText.length < selectionStart) {
-          diff = imgMarkdown.length - uploadingText.length;
+          diff = finishedUploadText.length - uploadingText.length;
           return this.setSelectionRange(selectionStart + diff, selectionEnd + diff);
         } else {
           return this.setSelectionRange(selectionStart, selectionEnd);
         }
       } else {
-        return this.insert(this.getTextArray(), imgMarkdown);
+        return this.insert(this.getTextArray(), finishedUploadText);
       }
     };
 
@@ -880,7 +882,9 @@
         tableSeparator: '---',
         csvToTable: true,
         sortTable: true,
-        uploadingFormat: "![Uploading... ${name}]()"
+        uploadingFormat: function(name) {
+          return "![Uploading... " + name + "]()";
+        }
       }, options);
       this.each(function() {
         return $(this).data('markdownEditor', new MarkdownEditor(this, options));

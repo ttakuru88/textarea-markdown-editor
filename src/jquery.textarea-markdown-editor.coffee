@@ -590,13 +590,15 @@ class MarkdownEditor
     @el.value = @getText().replace(@buildUploadingText(name), '')
 
   buildUploadingText: (name) ->
-    @options.uploadingFormat.replace("${name}", name)
+    @options.uploadingFormat(name)
 
-  finishUpload: (name, url, options = {}) ->
+  finishUpload: (name, options = {}) ->
     text = @getText()
-    alt = if options.alt? then options.alt else ''
-    imgMarkdown = "![#{alt}](#{url})"
-    imgMarkdown = "[#{imgMarkdown}](#{options.href})" if options.href?
+    finishedUploadText = options.text || ''
+    if finishedUploadText.length <= 0 && options.url || options.alt
+      finishedUploadText = "![#{options.alt || ''}](#{options.url || ''})"
+      finishedUploadText = "[#{finishedUploadText}](#{options.href})" if options.href?
+
     uploadingText = @buildUploadingText(name)
 
     uploadingTextPos = text.indexOf(uploadingText)
@@ -604,15 +606,15 @@ class MarkdownEditor
       selectionStart = @getSelectionStart()
       selectionEnd = @getSelectionEnd()
 
-      @el.value = text.replace(uploadingText, imgMarkdown)
+      @el.value = text.replace(uploadingText, finishedUploadText)
 
       if uploadingTextPos + uploadingText.length < selectionStart
-        diff = imgMarkdown.length - uploadingText.length
+        diff = finishedUploadText.length - uploadingText.length
         @setSelectionRange(selectionStart + diff, selectionEnd + diff)
       else
         @setSelectionRange(selectionStart, selectionEnd)
     else
-      @insert(@getTextArray(), imgMarkdown)
+      @insert(@getTextArray(), finishedUploadText)
 
 $.fn.markdownEditor = (options = {}) ->
   if typeof options == 'string'
@@ -636,7 +638,8 @@ $.fn.markdownEditor = (options = {}) ->
       tableSeparator: '---'
       csvToTable: true
       sortTable: true
-      uploadingFormat: "![Uploading... ${name}]()"
+      uploadingFormat: (name) ->
+        "![Uploading... #{name}]()"
     , options
 
     @each ->

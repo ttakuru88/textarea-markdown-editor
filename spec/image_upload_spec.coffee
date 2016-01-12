@@ -62,33 +62,47 @@ describe 'Image upload', ->
       beforeEach ->
         action = (text, options) ->
           textarea.val(text)
-          markdownEditor.finishUpload('file1', 'http://example.com/a.gif', options)
+          markdownEditor.finishUpload('file1', options)
 
       context 'exists uploading text', ->
         context 'no option', ->
           beforeEach ->
             action("image1: ![Uploading... file1]()")
 
+          it 'remove uploading text', ->
+            expect(textarea.val()).to.eql 'image1: '
+
+        context 'url option', ->
+          beforeEach ->
+            action("image1: ![Uploading... file1]()", url: 'http://example.com/a.gif')
+
           it 'replace img markdown', ->
             expect(textarea.val()).to.eql 'image1: ![](http://example.com/a.gif)'
 
-        context 'href option', ->
+        context 'url & href option', ->
           beforeEach ->
-            action("image1: ![Uploading... file1]()", href: 'http://example.com/a_l.gif')
+            action("image1: ![Uploading... file1]()", url: 'http://example.com/a.gif', href: 'http://example.com/a_l.gif')
 
           it 'replace img markdown', ->
             expect(textarea.val()).to.eql 'image1: [![](http://example.com/a.gif)](http://example.com/a_l.gif)'
 
-        context 'alt option', ->
+        context 'url & alt option', ->
           beforeEach ->
-            action("image1: ![Uploading... file1]()", alt: 'a.gif')
+            action("image1: ![Uploading... file1]()", url: 'http://example.com/a.gif', alt: 'a.gif')
 
           it 'replace img markdown', ->
             expect(textarea.val()).to.eql 'image1: ![a.gif](http://example.com/a.gif)'
 
+        context 'text option', ->
+          beforeEach ->
+            action("image1: ![Uploading... file1]()", text: 'a.gif')
+
+          it 'replace uploading text to text option', ->
+            expect(textarea.val()).to.eql 'image1: a.gif'
+
       context 'not exists uploading text', ->
         beforeEach ->
-          action('')
+          action('', url: 'http://example.com/a.gif')
 
         it 'insert img markdown', ->
           expect(textarea.val()).to.eql '![](http://example.com/a.gif)'
