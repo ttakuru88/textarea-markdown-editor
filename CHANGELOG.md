@@ -1,3 +1,6 @@
+## v0.8.0
+* Font decoratable.
+
 ## v0.7.0
 
 * Text for uploading image.
