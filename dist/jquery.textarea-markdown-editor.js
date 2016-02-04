@@ -824,7 +824,7 @@
     };
 
     MarkdownEditor.prototype.finishUpload = function(name, options) {
-      var diff, finishedUploadText, selectionEnd, selectionStart, text, uploadingText, uploadingTextPos;
+      var finishedUploadText, pos, selectionEnd, selectionStart, text, uploadingText, uploadingTextPos;
       if (options == null) {
         options = {};
       }
@@ -842,12 +842,8 @@
         selectionStart = this.getSelectionStart();
         selectionEnd = this.getSelectionEnd();
         this.el.value = text.replace(uploadingText, finishedUploadText);
-        if (uploadingTextPos + uploadingText.length < selectionStart) {
-          diff = finishedUploadText.length - uploadingText.length;
-          return this.setSelectionRange(selectionStart + diff, selectionEnd + diff);
-        } else {
-          return this.setSelectionRange(selectionStart, selectionEnd);
-        }
+        pos = selectionStart + (finishedUploadText.length - uploadingText.length);
+        return this.setSelectionRange(pos, pos);
       } else {
         return this.insert(this.getTextArray(), finishedUploadText);
       }

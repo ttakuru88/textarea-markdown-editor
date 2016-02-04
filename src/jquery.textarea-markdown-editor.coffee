@@ -608,11 +608,8 @@ class MarkdownEditor
 
       @el.value = text.replace(uploadingText, finishedUploadText)
 
-      if uploadingTextPos + uploadingText.length < selectionStart
-        diff = finishedUploadText.length - uploadingText.length
-        @setSelectionRange(selectionStart + diff, selectionEnd + diff)
-      else
-        @setSelectionRange(selectionStart, selectionEnd)
+      pos = selectionStart + (finishedUploadText.length - uploadingText.length)
+      @setSelectionRange(pos, pos)
     else
       @insert(@getTextArray(), finishedUploadText)
 
