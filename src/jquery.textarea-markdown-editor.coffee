@@ -442,7 +442,7 @@ class MarkdownEditor
       currentLine = @getCurrentLine(text, beginningOfLines[0])
       if @options.list && currentLine.match(listFormat) && !currentLine.match(hrFormat)
         @insertSpacesToBeginningOfLines(text, currentPos, beginningOfLines, e.shiftKey)
-      else
+      else if !e.shiftKey
         @insert(text, @tabSpaces)
     else
       @insertSpacesToBeginningOfLines(text, currentPos, beginningOfLines, e.shiftKey)

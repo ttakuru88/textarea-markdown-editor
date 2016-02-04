@@ -620,7 +620,7 @@
         currentLine = this.getCurrentLine(text, beginningOfLines[0]);
         if (this.options.list && currentLine.match(listFormat) && !currentLine.match(hrFormat)) {
           return this.insertSpacesToBeginningOfLines(text, currentPos, beginningOfLines, e.shiftKey);
-        } else {
+        } else if (!e.shiftKey) {
           return this.insert(text, this.tabSpaces);
         }
       } else {
