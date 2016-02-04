@@ -5,7 +5,12 @@
   KeyCodes = {
     tab: 9,
     enter: 13,
-    space: 32
+    ctrl: 17,
+    space: 32,
+    b: 66,
+    i: 73,
+    u: 85,
+    q: 81
   };
 
   MarkdownEditor = (function() {
@@ -71,7 +76,10 @@
             }
           }
           if (e.keyCode === KeyCodes.tab) {
-            return _this.onPressTab(e);
+            _this.onPressTab(e);
+          }
+          if (e.ctrlKey && !e.metaKey && !e.shiftKey && e.which !== KeyCodes.ctrl) {
+            return _this.withCtrl(e);
           }
         };
       })(this));
@@ -596,6 +604,44 @@
       }
     };
 
+    MarkdownEditor.prototype.withCtrl = function(e) {
+      var preventDefault;
+      if (!this.options.fontDecorate) {
+        return;
+      }
+      preventDefault = (function() {
+        switch (e.which) {
+          case KeyCodes.b:
+            return this.wrap('**');
+          case KeyCodes.i:
+            return this.wrap('_');
+          case KeyCodes.u:
+            return this.wrap('~~');
+          case KeyCodes.q:
+            return this.wrap('`');
+        }
+      }).call(this);
+      if (preventDefault != null) {
+        return e.preventDefault();
+      }
+    };
+
+    MarkdownEditor.prototype.wrap = function(wrapper) {
+      var beginningOfLines, selectionEnd, selectionStart, text;
+      selectionStart = this.getSelectionStart();
+      selectionEnd = this.getSelectionEnd();
+      text = this.getTextArray();
+      beginningOfLines = this.getPosBeginningOfLines(text, selectionStart, selectionEnd);
+      if (beginningOfLines.length > 1) {
+        return false;
+      }
+      text.splice(selectionEnd, 0, wrapper);
+      text.splice(selectionStart, 0, wrapper);
+      this.el.value = text.join('');
+      this.setSelectionRange(selectionStart + wrapper.length, selectionEnd + wrapper.length);
+      return true;
+    };
+
     MarkdownEditor.prototype.moveCursorOnTableCell = function(e) {
       var currentLine, text;
       text = this.replaceEscapedPipe(this.getText());
@@ -873,6 +919,7 @@
         tabToSpace: true,
         list: true,
         table: true,
+        fontDecorate: true,
         codeblock: true,
         autoTable: true,
         tableSeparator: '---',

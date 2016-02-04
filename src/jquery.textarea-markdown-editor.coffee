@@ -1,7 +1,12 @@
 KeyCodes =
   tab: 9
   enter: 13
+  ctrl: 17
   space: 32
+  b: 66
+  i: 73
+  u: 85
+  q: 81
 
 class MarkdownEditor
   listFormat     = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/
@@ -39,6 +44,9 @@ class MarkdownEditor
 
       if e.keyCode == KeyCodes.tab
         @onPressTab(e)
+
+      if e.ctrlKey && !e.metaKey && !e.shiftKey && e.which != KeyCodes.ctrl
+        @withCtrl(e)
 
   getTextArray: ->
     @getText().split('')
@@ -420,6 +428,35 @@ class MarkdownEditor
 
     @tabToSpace(e) if @options.tabToSpace
 
+  withCtrl: (e) ->
+    return unless @options.fontDecorate
+
+    preventDefault = switch e.which
+      when KeyCodes.b
+        @wrap('**')
+      when KeyCodes.i
+        @wrap('_')
+      when KeyCodes.u
+        @wrap('~~')
+      when KeyCodes.q
+        @wrap('`')
+
+    e.preventDefault() if preventDefault?
+
+  wrap: (wrapper) ->
+    selectionStart = @getSelectionStart()
+    selectionEnd = @getSelectionEnd()
+    text = @getTextArray()
+    beginningOfLines = @getPosBeginningOfLines(text, selectionStart, selectionEnd)
+    return false if beginningOfLines.length > 1
+
+    text.splice(selectionEnd, 0, wrapper)
+    text.splice(selectionStart, 0, wrapper)
+    @el.value = text.join('')
+
+    @setSelectionRange(selectionStart + wrapper.length, selectionEnd + wrapper.length)
+    true
+
   moveCursorOnTableCell: (e) ->
     text = @replaceEscapedPipe(@getText())
     currentLine = @getCurrentLine(text)
@@ -630,6 +667,7 @@ $.fn.markdownEditor = (options = {}) ->
       tabToSpace: true
       list: true
       table: true
+      fontDecorate: true
       codeblock: true
       autoTable: true
       tableSeparator: '---'
