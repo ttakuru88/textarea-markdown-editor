@@ -446,6 +446,7 @@ class MarkdownEditor
   wrap: (wrapper) ->
     selectionStart = @getSelectionStart()
     selectionEnd = @getSelectionEnd()
+    return if selectionStart == selectionEnd
     text = @getTextArray()
     beginningOfLines = @getPosBeginningOfLines(text, selectionStart, selectionEnd)
     return false if beginningOfLines.length > 1

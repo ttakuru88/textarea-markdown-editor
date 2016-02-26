@@ -630,6 +630,9 @@
       var beginningOfLines, selectionEnd, selectionStart, text;
       selectionStart = this.getSelectionStart();
       selectionEnd = this.getSelectionEnd();
+      if (selectionStart === selectionEnd) {
+        return;
+      }
       text = this.getTextArray();
       beginningOfLines = this.getPosBeginningOfLines(text, selectionStart, selectionEnd);
       if (beginningOfLines.length > 1) {
