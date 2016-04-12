@@ -10,12 +10,12 @@ KeyCodes =
 
 class MarkdownEditor
   listFormat     = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/
-  hrFormat       = /^\s*((-\s+-\s+-(\s+-)*)|(\*\s+\*\s+\*(\s+\*)*))\s*$/
-  rowFormat      = /^\|(.*?\|)+\s*$/
-  rowSepFormat   = /^\|(\s*:?---+:?\s*\|)+\s*$/
-  emptyRowFormat = /^\|(\s*?\|)+\s*$/
-  beginCodeblockFormat = /^((```+)|(~~~+))(\S*\s*)$/
-  endCodeblockFormat   = /^((```+)|(~~~+))$/
+  hrFormat       = /^\s{0,3}\s*((-\s+-\s+-(\s+-)*)|(\*\s+\*\s+\*(\s+\*)*))\s*$/
+  rowFormat      = /^\s{0,3}\|(.*?\|)+\s*$/
+  rowSepFormat   = /^\s{0,3}\|(\s*:?---+:?\s*\|)+\s*$/
+  emptyRowFormat = /^\s{0,3}\|(\s*?\|)+\s*$/
+  beginCodeblockFormat = /^\s{0,3}((```+)|(~~~+))(\S*\s*)$/
+  endCodeblockFormat   = /^\s{0,3}((```+)|(~~~+))$/
   makingTableFormat = /^(:?)(\d+)x(\d+)(:?)$/
   numberFormat = /^-?\d+[\d\.]*$/
 

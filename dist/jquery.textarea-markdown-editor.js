@@ -18,17 +18,17 @@
 
     listFormat = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/;
 
-    hrFormat = /^\s*((-\s+-\s+-(\s+-)*)|(\*\s+\*\s+\*(\s+\*)*))\s*$/;
+    hrFormat = /^\s{0,3}\s*((-\s+-\s+-(\s+-)*)|(\*\s+\*\s+\*(\s+\*)*))\s*$/;
 
-    rowFormat = /^\|(.*?\|)+\s*$/;
+    rowFormat = /^\s{0,3}\|(.*?\|)+\s*$/;
 
-    rowSepFormat = /^\|(\s*:?---+:?\s*\|)+\s*$/;
+    rowSepFormat = /^\s{0,3}\|(\s*:?---+:?\s*\|)+\s*$/;
 
-    emptyRowFormat = /^\|(\s*?\|)+\s*$/;
+    emptyRowFormat = /^\s{0,3}\|(\s*?\|)+\s*$/;
 
-    beginCodeblockFormat = /^((```+)|(~~~+))(\S*\s*)$/;
+    beginCodeblockFormat = /^\s{0,3}((```+)|(~~~+))(\S*\s*)$/;
 
-    endCodeblockFormat = /^((```+)|(~~~+))$/;
+    endCodeblockFormat = /^\s{0,3}((```+)|(~~~+))$/;
 
     makingTableFormat = /^(:?)(\d+)x(\d+)(:?)$/;
 
