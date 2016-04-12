@@ -277,6 +277,8 @@ class MarkdownEditor
     return if col < 0
     return unless row?
 
+    e.preventDefault()
+
     data = @getCurrentTableData(text)
     currentCellText = data.lines[row].values[col]
     return if typeof currentCellText != 'string'
@@ -285,12 +287,11 @@ class MarkdownEditor
     return unless match
 
     inputFunction = match[1]
-    inCaseSensitiveFunction = new RegExp(inputFunction, 'i')
+    inCaseSensitiveFunction = new RegExp("^#{inputFunction}$", 'i')
     for tableFunction in tableFunctions
       if tableFunction.match(inCaseSensitiveFunction)
         result = @["#{tableFunction}TableFunction"](data, col, row)
         @replaceCurrentCol(text, result) if result?
-        e.preventDefault()
         return
 
   countTableFunction: (data, col, row) ->

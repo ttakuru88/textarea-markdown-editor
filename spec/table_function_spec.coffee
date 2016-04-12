@@ -26,6 +26,16 @@ describe 'Table Function', ->
     currentPos = null
     markdownEditor = null
 
+  describe 'invalid function name', ->
+    beforeEach ->
+      text = "|z|x|\n|---|---|\n|c|10|\n|d|20|\n|e|30|\n||=SU|"
+      currentPos = text.length - 3
+
+      action()
+
+    it 'do nothing', ->
+      expect(textarea.val()).to.eql text
+
   describe 'sum', ->
     context 'all type of number', ->
       beforeEach ->

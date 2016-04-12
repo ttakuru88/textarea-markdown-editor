@@ -371,6 +371,7 @@
       if (row == null) {
         return;
       }
+      e.preventDefault();
       data = this.getCurrentTableData(text);
       currentCellText = data.lines[row].values[col];
       if (typeof currentCellText !== 'string') {
@@ -381,7 +382,7 @@
         return;
       }
       inputFunction = match[1];
-      inCaseSensitiveFunction = new RegExp(inputFunction, 'i');
+      inCaseSensitiveFunction = new RegExp("^" + inputFunction + "$", 'i');
       for (k = 0, len = tableFunctions.length; k < len; k++) {
         tableFunction = tableFunctions[k];
         if (tableFunction.match(inCaseSensitiveFunction)) {
@@ -389,7 +390,6 @@
           if (result != null) {
             this.replaceCurrentCol(text, result);
           }
-          e.preventDefault();
           return;
         }
       }
