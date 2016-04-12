@@ -20,7 +20,7 @@ class MarkdownEditor
   numberFormat = /^-?\d+[\d\.]*$/
   functionFormat = /^=\s*(\S+)\s*$/
 
-  tableFunctions = ['sum', 'average']
+  tableFunctions = ['sum', 'average', 'max', 'min']
 
   constructor: (@el, @options) ->
     @$el = $(@el)
@@ -289,9 +289,35 @@ class MarkdownEditor
     for tableFunction in tableFunctions
       if tableFunction.match(inCaseSensitiveFunction)
         result = @["#{tableFunction}TableFunction"](data, col, row)
-        @replaceCurrentCol(text, result)
+        @replaceCurrentCol(text, result) if result?
         e.preventDefault()
         return
+
+  maxTableFunction: (data, col, row) ->
+    max = -Infinity
+    for line in data.lines
+      if typeof line.values[col] == 'number' && max < line.values[col]
+        max = line.values[col]
+      else
+        number = parseFloat(line.values[col])
+        max = number if number? && !isNaN(number) && max < number
+
+    return null if max == -Infinity
+
+    max
+
+  minTableFunction: (data, col, row) ->
+    min = Infinity
+    for line in data.lines
+      if typeof line.values[col] == 'number' && min > line.values[col]
+        min = line.values[col]
+      else
+        number = parseFloat(line.values[col])
+        min = number if number? && !isNaN(number) && min > number
+
+    return null if min == Infinity
+
+    min
 
   averageTableFunction: (data, col, row) ->
     @sumTableFunction(data, col, row) / (data.lines.length - 1)

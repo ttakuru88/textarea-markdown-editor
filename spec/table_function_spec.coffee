@@ -67,3 +67,45 @@ describe 'Table Function', ->
 
       it 'replace current cell', ->
         expect(textarea.val()).to.eql "|z|x|\n|---|---|\n|c|10pt|\n|d|20pt|\n|e|30pt|\n|| 20 |"
+
+  describe 'max', ->
+    context 'all type of number', ->
+      beforeEach ->
+        text = "|z|x|\n|---|---|\n|c|10|\n|d|20|\n|e|30|\n||=max|"
+        currentPos = text.length - 3
+
+        action()
+
+      it 'replace current cell', ->
+        expect(textarea.val()).to.eql "|z|x|\n|---|---|\n|c|10|\n|d|20|\n|e|30|\n|| 30 |"
+
+    context 'no data', ->
+      beforeEach ->
+        text = "|z|x|\n|---|---|\n||=max|"
+        currentPos = text.length - 3
+
+        action()
+
+      it 'nothing do', ->
+        expect(textarea.val()).to.eql text
+
+  describe 'min', ->
+    context 'all type of number', ->
+      beforeEach ->
+        text = "|z|x|\n|---|---|\n|c|10|\n|d|20|\n|e|30|\n||=min|"
+        currentPos = text.length - 3
+
+        action()
+
+      it 'replace current cell', ->
+        expect(textarea.val()).to.eql "|z|x|\n|---|---|\n|c|10|\n|d|20|\n|e|30|\n|| 10 |"
+
+    context 'no data', ->
+      beforeEach ->
+        text = "|z|x|\n|---|---|\n||=min|"
+        currentPos = text.length - 3
+
+        action()
+
+      it 'nothing do', ->
+        expect(textarea.val()).to.eql text

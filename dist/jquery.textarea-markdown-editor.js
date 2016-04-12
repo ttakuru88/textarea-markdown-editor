@@ -36,7 +36,7 @@
 
     functionFormat = /^=\s*(\S+)\s*$/;
 
-    tableFunctions = ['sum', 'average'];
+    tableFunctions = ['sum', 'average', 'max', 'min'];
 
     function MarkdownEditor(el, options1) {
       var i, k, ref;
@@ -386,11 +386,55 @@
         tableFunction = tableFunctions[k];
         if (tableFunction.match(inCaseSensitiveFunction)) {
           result = this[tableFunction + "TableFunction"](data, col, row);
-          this.replaceCurrentCol(text, result);
+          if (result != null) {
+            this.replaceCurrentCol(text, result);
+          }
           e.preventDefault();
           return;
         }
       }
+    };
+
+    MarkdownEditor.prototype.maxTableFunction = function(data, col, row) {
+      var k, len, line, max, number, ref;
+      max = -Infinity;
+      ref = data.lines;
+      for (k = 0, len = ref.length; k < len; k++) {
+        line = ref[k];
+        if (typeof line.values[col] === 'number' && max < line.values[col]) {
+          max = line.values[col];
+        } else {
+          number = parseFloat(line.values[col]);
+          if ((number != null) && !isNaN(number) && max < number) {
+            max = number;
+          }
+        }
+      }
+      if (max === -Infinity) {
+        return null;
+      }
+      return max;
+    };
+
+    MarkdownEditor.prototype.minTableFunction = function(data, col, row) {
+      var k, len, line, min, number, ref;
+      min = Infinity;
+      ref = data.lines;
+      for (k = 0, len = ref.length; k < len; k++) {
+        line = ref[k];
+        if (typeof line.values[col] === 'number' && min > line.values[col]) {
+          min = line.values[col];
+        } else {
+          number = parseFloat(line.values[col]);
+          if ((number != null) && !isNaN(number) && min > number) {
+            min = number;
+          }
+        }
+      }
+      if (min === Infinity) {
+        return null;
+      }
+      return min;
     };
 
     MarkdownEditor.prototype.averageTableFunction = function(data, col, row) {
