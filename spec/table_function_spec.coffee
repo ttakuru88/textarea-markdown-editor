@@ -109,3 +109,24 @@ describe 'Table Function', ->
 
       it 'nothing do', ->
         expect(textarea.val()).to.eql text
+
+  describe 'count', ->
+    context 'all type of number', ->
+      beforeEach ->
+        text = "|z|x|\n|---|---|\n|c|10|\n|d|20|\n|e|30|\n||=Count|"
+        currentPos = text.length - 3
+
+        action()
+
+      it 'replace current cell', ->
+        expect(textarea.val()).to.eql "|z|x|\n|---|---|\n|c|10|\n|d|20|\n|e|30|\n|| 3 |"
+
+    context 'no data', ->
+      beforeEach ->
+        text = "|z|x|\n|---|---|\n||=Count|"
+        currentPos = text.length - 3
+
+        action()
+
+      it 'replace current cell to zero', ->
+        expect(textarea.val()).to.eql "|z|x|\n|---|---|\n|| 0 |"

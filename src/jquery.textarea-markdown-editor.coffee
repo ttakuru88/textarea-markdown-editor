@@ -20,7 +20,7 @@ class MarkdownEditor
   numberFormat = /^-?\d+[\d\.]*$/
   functionFormat = /^=\s*(\S+)\s*$/
 
-  tableFunctions = ['sum', 'average', 'max', 'min']
+  tableFunctions = ['sum', 'average', 'max', 'min', 'count']
 
   constructor: (@el, @options) ->
     @$el = $(@el)
@@ -292,6 +292,9 @@ class MarkdownEditor
         @replaceCurrentCol(text, result) if result?
         e.preventDefault()
         return
+
+  countTableFunction: (data, col, row) ->
+    data.lines.length - 1
 
   maxTableFunction: (data, col, row) ->
     max = -Infinity

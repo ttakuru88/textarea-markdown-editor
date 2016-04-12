@@ -36,7 +36,7 @@
 
     functionFormat = /^=\s*(\S+)\s*$/;
 
-    tableFunctions = ['sum', 'average', 'max', 'min'];
+    tableFunctions = ['sum', 'average', 'max', 'min', 'count'];
 
     function MarkdownEditor(el, options1) {
       var i, k, ref;
@@ -393,6 +393,10 @@
           return;
         }
       }
+    };
+
+    MarkdownEditor.prototype.countTableFunction = function(data, col, row) {
+      return data.lines.length - 1;
     };
 
     MarkdownEditor.prototype.maxTableFunction = function(data, col, row) {
