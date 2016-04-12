@@ -20,7 +20,7 @@ class MarkdownEditor
   numberFormat = /^-?\d+[\d\.]*$/
   functionFormat = /^=\s*(\S+)\s*$/
 
-  tableFunctions = ['sum']
+  tableFunctions = ['sum', 'average']
 
   constructor: (@el, @options) ->
     @$el = $(@el)
@@ -292,6 +292,9 @@ class MarkdownEditor
         @replaceCurrentCol(text, result)
         e.preventDefault()
         return
+
+  averageTableFunction: (data, col, row) ->
+    @sumTableFunction(data, col, row) / (data.lines.length - 1)
 
   sumTableFunction: (data, col, row) ->
     sum = 0.0

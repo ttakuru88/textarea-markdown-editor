@@ -46,3 +46,24 @@ describe 'Table Function', ->
 
       it 'replace current cell', ->
         expect(textarea.val()).to.eql "|z|x|\n|---|---|\n|c|10pt|\n|d|20pt|\n|e|30pt|\n|| 60 |"
+
+  describe 'average', ->
+    context 'all type of number', ->
+      beforeEach ->
+        text = "|z|x|\n|---|---|\n|c|10|\n|d|20|\n|e|30|\n||=Average|"
+        currentPos = text.length - 3
+
+        action()
+
+      it 'replace current cell', ->
+        expect(textarea.val()).to.eql "|z|x|\n|---|---|\n|c|10|\n|d|20|\n|e|30|\n|| 20 |"
+
+    context 'type of string', ->
+      beforeEach ->
+        text = "|z|x|\n|---|---|\n|c|10pt|\n|d|20pt|\n|e|30pt|\n||=Average|"
+        currentPos = text.length - 3
+
+        action()
+
+      it 'replace current cell', ->
+        expect(textarea.val()).to.eql "|z|x|\n|---|---|\n|c|10pt|\n|d|20pt|\n|e|30pt|\n|| 20 |"

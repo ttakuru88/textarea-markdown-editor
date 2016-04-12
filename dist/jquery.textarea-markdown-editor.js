@@ -36,7 +36,7 @@
 
     functionFormat = /^=\s*(\S+)\s*$/;
 
-    tableFunctions = ['sum'];
+    tableFunctions = ['sum', 'average'];
 
     function MarkdownEditor(el, options1) {
       var i, k, ref;
@@ -391,6 +391,10 @@
           return;
         }
       }
+    };
+
+    MarkdownEditor.prototype.averageTableFunction = function(data, col, row) {
+      return this.sumTableFunction(data, col, row) / (data.lines.length - 1);
     };
 
     MarkdownEditor.prototype.sumTableFunction = function(data, col, row) {
