@@ -310,6 +310,10 @@ class MarkdownEditor
 
     max
 
+  round: (num) ->
+    w = Math.pow(10, @options.significantFigures)
+    Math.round(num * w) / w
+
   minTableFunction: (data, col, row) ->
     min = Infinity
     for line in data.lines
@@ -324,7 +328,7 @@ class MarkdownEditor
     min
 
   averageTableFunction: (data, col, row) ->
-    @sumTableFunction(data, col, row) / (data.lines.length - 1)
+    @round(@sumTableFunction(data, col, row) / @countTableFunction(data, col, row))
 
   sumTableFunction: (data, col, row) ->
     sum = 0.0
@@ -335,7 +339,7 @@ class MarkdownEditor
         number = parseFloat(line.values[col])
         sum += number if number? && !isNaN(number)
 
-    sum
+    @round sum
 
   replaceCurrentCol: (text, str, pos = @getSelectionStart()) ->
     sp = pos
@@ -788,6 +792,7 @@ $.fn.markdownEditor = (options = {}) ->
       csvToTable: true
       sortTable: true
       tableFunction: true
+      significantFigures: 4
       uploadingFormat: (name) ->
         "![Uploading... #{name}]()"
     , options

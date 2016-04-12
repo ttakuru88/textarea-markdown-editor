@@ -57,6 +57,16 @@ describe 'Table Function', ->
       it 'replace current cell', ->
         expect(textarea.val()).to.eql "|z|x|\n|---|---|\n|c|10pt|\n|d|20pt|\n|e|30pt|\n|| 60 |"
 
+    context 'type of float', ->
+      beforeEach ->
+        text = "|z|x|\n|---|---|\n|c|1.1|\n|d|2.2|\n||=SUM|"
+        currentPos = text.length - 3
+
+        action()
+
+      it 'replace current cell', ->
+        expect(textarea.val()).to.eql "|z|x|\n|---|---|\n|c|1.1|\n|d|2.2|\n|| 3.3 |"
+
   describe 'average', ->
     context 'all type of number', ->
       beforeEach ->

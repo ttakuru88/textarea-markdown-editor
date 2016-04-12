@@ -420,6 +420,12 @@
       return max;
     };
 
+    MarkdownEditor.prototype.round = function(num) {
+      var w;
+      w = Math.pow(10, this.options.significantFigures);
+      return Math.round(num * w) / w;
+    };
+
     MarkdownEditor.prototype.minTableFunction = function(data, col, row) {
       var k, len, line, min, number, ref;
       min = Infinity;
@@ -442,7 +448,7 @@
     };
 
     MarkdownEditor.prototype.averageTableFunction = function(data, col, row) {
-      return this.sumTableFunction(data, col, row) / (data.lines.length - 1);
+      return this.round(this.sumTableFunction(data, col, row) / this.countTableFunction(data, col, row));
     };
 
     MarkdownEditor.prototype.sumTableFunction = function(data, col, row) {
@@ -460,7 +466,7 @@
           }
         }
       }
-      return sum;
+      return this.round(sum);
     };
 
     MarkdownEditor.prototype.replaceCurrentCol = function(text, str, pos) {
@@ -1099,6 +1105,7 @@
         csvToTable: true,
         sortTable: true,
         tableFunction: true,
+        significantFigures: 4,
         uploadingFormat: function(name) {
           return "![Uploading... " + name + "]()";
         }
