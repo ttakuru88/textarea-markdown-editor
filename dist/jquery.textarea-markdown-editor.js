@@ -14,7 +14,7 @@
   };
 
   MarkdownEditor = (function() {
-    var beginCodeblockFormat, emptyRowFormat, endCodeblockFormat, hrFormat, listFormat, makingTableFormat, numberFormat, rowFormat, rowSepFormat;
+    var beginCodeblockFormat, emptyRowFormat, endCodeblockFormat, functionFormat, hrFormat, listFormat, makingTableFormat, numberFormat, rowFormat, rowSepFormat, tableFunctions;
 
     listFormat = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/;
 
@@ -33,6 +33,10 @@
     makingTableFormat = /^(:?)(\d+)x(\d+)(:?)$/;
 
     numberFormat = /^-?\d+[\d\.]*$/;
+
+    functionFormat = /^=\s*(\S+)\s*$/;
+
+    tableFunctions = ['sum'];
 
     function MarkdownEditor(el, options1) {
       var i, k, ref;
@@ -73,6 +77,9 @@
             }
             if (_this.options.sortTable) {
               _this.sortTable(e, text, currentLine);
+            }
+            if (_this.options.tableFunction) {
+              _this.tableFunction(e, text, currentLine);
             }
           }
           if (e.keyCode === KeyCodes.tab) {
@@ -351,6 +358,77 @@
       return typeof (base = this.options).onMadeTable === "function" ? base.onMadeTable(e) : void 0;
     };
 
+    MarkdownEditor.prototype.tableFunction = function(e, text, currentLine) {
+      var col, currentCellText, data, inCaseSensitiveFunction, inputFunction, k, len, match, result, row, tableFunction;
+      if (this.isSelectRange()) {
+        return;
+      }
+      col = this.getCurrentCol(text, currentLine) - 1;
+      row = this.getCurrentRow(text);
+      if (col < 0) {
+        return;
+      }
+      if (row == null) {
+        return;
+      }
+      data = this.getCurrentTableData(text);
+      currentCellText = data.lines[row].values[col];
+      if (typeof currentCellText !== 'string') {
+        return;
+      }
+      match = currentCellText.match(functionFormat);
+      if (!match) {
+        return;
+      }
+      inputFunction = match[1];
+      inCaseSensitiveFunction = new RegExp(inputFunction, 'i');
+      for (k = 0, len = tableFunctions.length; k < len; k++) {
+        tableFunction = tableFunctions[k];
+        if (tableFunction.match(inCaseSensitiveFunction)) {
+          result = this[tableFunction + "TableFunction"](data, col, row);
+          this.replaceCurrentCol(text, result);
+          e.preventDefault();
+          return;
+        }
+      }
+    };
+
+    MarkdownEditor.prototype.sumTableFunction = function(data, col, row) {
+      var k, len, line, number, ref, sum;
+      sum = 0.0;
+      ref = data.lines;
+      for (k = 0, len = ref.length; k < len; k++) {
+        line = ref[k];
+        if (typeof line.values[col] === 'number') {
+          sum += line.values[col];
+        } else {
+          number = parseFloat(line.values[col]);
+          if ((number != null) && !isNaN(number)) {
+            sum += number;
+          }
+        }
+      }
+      return sum;
+    };
+
+    MarkdownEditor.prototype.replaceCurrentCol = function(text, str, pos) {
+      var ep, sp;
+      if (pos == null) {
+        pos = this.getSelectionStart();
+      }
+      sp = pos;
+      ep = pos;
+      while (sp > 0 && text[sp - 1] !== '|') {
+        sp--;
+      }
+      while (text[ep] && text[ep] !== '|') {
+        ep++;
+      }
+      text.splice(sp, ep - sp, " " + str + " ");
+      this.el.value = text.join('');
+      return this.setSelectionRange(sp + 1, sp + ("" + str).length + 1);
+    };
+
     MarkdownEditor.prototype.sortTable = function(e, text, currentLine) {
       var asc, base, body, col, data, i, k, l, len, line, prevPos, ref, ref1;
       if (this.isSelectRange() || !this.isTableHeader(text)) {
@@ -415,13 +493,53 @@
       return count;
     };
 
+    MarkdownEditor.prototype.getCurrentRow = function(text, pos) {
+      var line, row;
+      if (pos == null) {
+        pos = this.getSelectionStart();
+      }
+      pos = this.getPosEndOfLine(text, pos) - 1;
+      row = 0;
+      line = this.getCurrentLine(text, pos);
+      while (this.replaceEscapedPipe(line).match(rowFormat)) {
+        pos -= line.length + 1;
+        line = this.getCurrentLine(text, pos);
+        row++;
+      }
+      if (row < 3) {
+        return null;
+      }
+      return row - 3;
+    };
+
     MarkdownEditor.prototype.isEmpty = function(v) {
       return v === null || v === void 0 || v === '';
     };
 
-    MarkdownEditor.prototype.getCurrentTableData = function(text) {
-      var base, data, i, k, len, line, newLineLeft, pos, v, values;
-      pos = this.getSelectionStart();
+    MarkdownEditor.prototype.getTableStart = function(text, pos) {
+      var line;
+      if (pos == null) {
+        pos = this.getSelectionStart();
+      }
+      pos = this.getPosEndOfLine(text, pos) - 1;
+      line = this.getCurrentLine(text, pos);
+      while (this.replaceEscapedPipe(line).match(rowFormat)) {
+        pos -= line.length + 1;
+        line = this.getCurrentLine(text, pos);
+      }
+      return pos + 2;
+    };
+
+    MarkdownEditor.prototype.isTableLine = function(text) {
+      return text.match(rowFormat);
+    };
+
+    MarkdownEditor.prototype.getCurrentTableData = function(text, pos) {
+      var base, data, i, k, len, line, newLineLeft, v, values;
+      if (pos == null) {
+        pos = this.getSelectionStart();
+      }
+      pos = this.getTableStart(text, pos);
       newLineLeft = 2;
       while (newLineLeft > 0 && (text[pos] != null)) {
         if (text[pos] === "\n") {
@@ -928,6 +1046,7 @@
         tableSeparator: '---',
         csvToTable: true,
         sortTable: true,
+        tableFunction: true,
         uploadingFormat: function(name) {
           return "![Uploading... " + name + "]()";
         }

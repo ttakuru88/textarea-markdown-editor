@@ -1,3 +1,6 @@
+## v0.9.0
+* Table functions.
+
 ## v0.8.0
 * Font decoratable.
 

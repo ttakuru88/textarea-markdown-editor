@@ -18,6 +18,9 @@ class MarkdownEditor
   endCodeblockFormat   = /^\s{0,3}((```+)|(~~~+))$/
   makingTableFormat = /^(:?)(\d+)x(\d+)(:?)$/
   numberFormat = /^-?\d+[\d\.]*$/
+  functionFormat = /^=\s*(\S+)\s*$/
+
+  tableFunctions = ['sum']
 
   constructor: (@el, @options) ->
     @$el = $(@el)
@@ -41,6 +44,7 @@ class MarkdownEditor
         @makeTable(e, text, currentLine) if @options.autoTable
         @csvToTable(e, text, currentLine) if @options.csvToTable
         @sortTable(e, text, currentLine) if @options.sortTable
+        @tableFunction(e, text, currentLine) if @options.tableFunction
 
       if e.keyCode == KeyCodes.tab
         @onPressTab(e)
@@ -265,6 +269,55 @@ class MarkdownEditor
 
     @options.onMadeTable?(e)
 
+  tableFunction: (e, text, currentLine) ->
+    return if @isSelectRange()
+
+    col = @getCurrentCol(text, currentLine) - 1
+    row = @getCurrentRow(text)
+    return if col < 0
+    return unless row?
+
+    data = @getCurrentTableData(text)
+    currentCellText = data.lines[row].values[col]
+    return if typeof currentCellText != 'string'
+
+    match = currentCellText.match(functionFormat)
+    return unless match
+
+    inputFunction = match[1]
+    inCaseSensitiveFunction = new RegExp(inputFunction, 'i')
+    for tableFunction in tableFunctions
+      if tableFunction.match(inCaseSensitiveFunction)
+        result = @["#{tableFunction}TableFunction"](data, col, row)
+        @replaceCurrentCol(text, result)
+        e.preventDefault()
+        return
+
+  sumTableFunction: (data, col, row) ->
+    sum = 0.0
+    for line in data.lines
+      if typeof line.values[col] == 'number'
+        sum += line.values[col]
+      else
+        number = parseFloat(line.values[col])
+        sum += number if number? && !isNaN(number)
+
+    sum
+
+  replaceCurrentCol: (text, str, pos = @getSelectionStart()) ->
+    sp = pos
+    ep = pos
+
+    while sp > 0 && text[sp-1] != '|'
+      sp--
+
+    while text[ep] && text[ep] != '|'
+      ep++
+
+    text.splice(sp, ep - sp, " #{str} ")
+    @el.value = text.join('')
+    @setSelectionRange(sp+1, sp + "#{str}".length + 1)
+
   sortTable: (e, text, currentLine) ->
     return if @isSelectRange() || !@isTableHeader(text)
     e.preventDefault()
@@ -310,11 +363,38 @@ class MarkdownEditor
 
     count
 
+  getCurrentRow: (text, pos = @getSelectionStart()) ->
+    pos = @getPosEndOfLine(text, pos) - 1
+    row = 0
+    line = @getCurrentLine(text, pos)
+    while @replaceEscapedPipe(line).match(rowFormat)
+      pos -= line.length + 1
+      line = @getCurrentLine(text, pos)
+      row++
+
+    return null if row < 3
+
+    row - 3
+
+
   isEmpty: (v) ->
     v == null || v == undefined || v == ''
 
-  getCurrentTableData: (text) ->
-    pos = @getSelectionStart()
+  getTableStart: (text, pos = @getSelectionStart()) ->
+    pos = @getPosEndOfLine(text, pos) - 1
+
+    line = @getCurrentLine(text, pos)
+    while @replaceEscapedPipe(line).match(rowFormat)
+      pos -= line.length + 1
+      line = @getCurrentLine(text, pos)
+
+    pos + 2
+
+  isTableLine: (text) ->
+    text.match(rowFormat)
+
+  getCurrentTableData: (text, pos = @getSelectionStart()) ->
+    pos = @getTableStart(text, pos)
     newLineLeft = 2
     while newLineLeft > 0 && text[pos]?
       newLineLeft-- if text[pos] == "\n"
@@ -674,6 +754,7 @@ $.fn.markdownEditor = (options = {}) ->
       tableSeparator: '---'
       csvToTable: true
       sortTable: true
+      tableFunction: true
       uploadingFormat: (name) ->
         "![Uploading... #{name}]()"
     , options
