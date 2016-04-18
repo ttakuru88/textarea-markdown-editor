@@ -5,20 +5,21 @@ describe 'Csv to table', ->
     keyCode = 32 # space
 
     beforeEach ->
-      textarea = $('<textarea>').markdownEditor()
-      markdownEditor = textarea.data('markdownEditor')
+      textarea = document.createElement('textarea')
+      markdownEditor = window.markdownEditor(textarea)
 
       action = (text, selectionStart = text.length, selectionEnd = text.length) ->
-        enterEvent = $.Event('keydown', keyCode: keyCode, shiftKey: true)
-
-        textarea.val(text)
+        textarea.value = text
 
         markdownEditor.getSelectionStart = -> selectionStart
         markdownEditor.getSelectionEnd = -> selectionEnd
         markdownEditor.selectionBegin = selectionStart
         markdownEditor.selectionEnd = selectionEnd
 
-        textarea.trigger(enterEvent)
+        event = new Event('keydown')
+        event.keyCode = keyCode
+        event.shiftKey = true
+        textarea.dispatchEvent(event)
 
     afterEach ->
       textarea = null
@@ -31,4 +32,4 @@ describe 'Csv to table', ->
         action("a, b,c\ne,f, g", 0)
 
       it 'to table', ->
-        expect(textarea.val()).to.eql "| a | b | c |\n| --- | --- | --- |\n| e | f | g |\n"
+        expect(textarea.value).to.eql "| a | b | c |\n| --- | --- | --- |\n| e | f | g |\n"

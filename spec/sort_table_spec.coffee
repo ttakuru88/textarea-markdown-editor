@@ -6,21 +6,22 @@ describe 'Sort table', ->
     setText = null
 
     beforeEach ->
-      textarea = $('<textarea>').markdownEditor()
-      markdownEditor = textarea.data('markdownEditor')
+      textarea = document.createElement('textarea')
+      markdownEditor = window.markdownEditor(textarea)
 
       setText = (text) ->
-        textarea.val(text)
+        textarea.value = text
 
       action = (pos) ->
-        enterEvent = $.Event('keydown', keyCode: 32, shiftKey: true)
-
         markdownEditor.getSelectionStart = -> pos
         markdownEditor.getSelectionEnd = -> pos
         markdownEditor.selectionBegin = pos
         markdownEditor.selectionEnd = pos
 
-        textarea.trigger(enterEvent)
+        event = new Event('keydown')
+        event.keyCode = 32
+        event.shiftKey = true
+        textarea.dispatchEvent(event)
 
     afterEach ->
       textarea = null
@@ -38,7 +39,7 @@ describe 'Sort table', ->
           action(1)
 
         it 'sort by first col', ->
-          expect(textarea.val()).to.eql "|a|b|\n|---|---|\n|b|3|\n|f|1|\n|h|9|\n"
+          expect(textarea.value).to.eql "|a|b|\n|---|---|\n|b|3|\n|f|1|\n|h|9|\n"
 
       context 'second col', ->
         context 'once', ->
@@ -46,7 +47,7 @@ describe 'Sort table', ->
             action(3)
 
           it 'sort by second col asc', ->
-            expect(textarea.val()).to.eql "|a|b|\n|---|---|\n|f|1|\n|b|3|\n|h|9|\n"
+            expect(textarea.value).to.eql "|a|b|\n|---|---|\n|f|1|\n|b|3|\n|h|9|\n"
 
         context 'twice', ->
           beforeEach ->
@@ -54,7 +55,7 @@ describe 'Sort table', ->
             action(3)
 
           it 'sort by second col desc', ->
-            expect(textarea.val()).to.eql "|a|b|\n|---|---|\n|h|9|\n|b|3|\n|f|1|\n"
+            expect(textarea.value).to.eql "|a|b|\n|---|---|\n|h|9|\n|b|3|\n|f|1|\n"
 
     context 'double table', ->
         beforeEach ->
@@ -65,4 +66,4 @@ describe 'Sort table', ->
             action(1)
 
           it 'sort by first col on first table', ->
-            expect(textarea.val()).to.eql "|a|b|\n|---|---|\n|b|3|\n|f|1|\n|h|9|\n\n|a|b|\n|---|---|\n|h|9|\n|b|3|\n|f|1|"
+            expect(textarea.value).to.eql "|a|b|\n|---|---|\n|b|3|\n|f|1|\n|h|9|\n\n|a|b|\n|---|---|\n|h|9|\n|b|3|\n|f|1|"

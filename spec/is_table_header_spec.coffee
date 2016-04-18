@@ -5,11 +5,11 @@ describe 'markdownEditor#isTableHeader', ->
     markdownEditor = null
 
     beforeEach ->
-      textarea = $('<textarea>').markdownEditor()
-      markdownEditor = textarea.data('markdownEditor')
+      textarea = document.createElement('textarea')
+      markdownEditor = window.markdownEditor(textarea)
 
       action = (pos) ->
-        textarea.val(text)
+        textarea.value = text
 
         markdownEditor.getSelectionStart = -> pos
         markdownEditor.selectionBegin = markdownEditor.selectionEnd = pos

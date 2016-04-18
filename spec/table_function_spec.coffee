@@ -6,18 +6,21 @@ describe 'Table Function', ->
   markdownEditor = null
 
   beforeEach ->
-    textarea = $('<textarea>').markdownEditor()
-    markdownEditor = textarea.data('markdownEditor')
-    shiftEnterEvent = $.Event('keydown', keyCode: 32, shiftKey: true)
+    textarea = document.createElement('textarea')
+    markdownEditor = window.markdownEditor(textarea)
+
+    shiftEnterEvent = new Event('keydown')
+    shiftEnterEvent.keyCode = 32
+    shiftEnterEvent.shiftKey = true
 
     action = ->
-      textarea.val(text)
+      textarea.value = text
 
       markdownEditor.getSelectionStart = -> currentPos
       markdownEditor.getSelectionEnd = -> currentPos
       markdownEditor.selectionBegin = markdownEditor.selectionEnd = currentPos
 
-      textarea.trigger(shiftEnterEvent)
+      textarea.dispatchEvent(shiftEnterEvent)
 
   afterEach ->
     textarea = null
@@ -34,7 +37,7 @@ describe 'Table Function', ->
       action()
 
     it 'do nothing', ->
-      expect(textarea.val()).to.eql text
+      expect(textarea.value).to.eql text
 
   describe 'sum', ->
     context 'all type of number', ->
@@ -45,7 +48,7 @@ describe 'Table Function', ->
         action()
 
       it 'replace current cell', ->
-        expect(textarea.val()).to.eql "|z|x|\n|---|---|\n|c|10|\n|d|20|\n|e|30|\n|| 60 |"
+        expect(textarea.value).to.eql "|z|x|\n|---|---|\n|c|10|\n|d|20|\n|e|30|\n|| 60 |"
 
     context 'type of string', ->
       beforeEach ->
@@ -55,7 +58,7 @@ describe 'Table Function', ->
         action()
 
       it 'replace current cell', ->
-        expect(textarea.val()).to.eql "|z|x|\n|---|---|\n|c|10pt|\n|d|20pt|\n|e|30pt|\n|| 60 |"
+        expect(textarea.value).to.eql "|z|x|\n|---|---|\n|c|10pt|\n|d|20pt|\n|e|30pt|\n|| 60 |"
 
     context 'type of float', ->
       beforeEach ->
@@ -65,7 +68,7 @@ describe 'Table Function', ->
         action()
 
       it 'replace current cell', ->
-        expect(textarea.val()).to.eql "|z|x|\n|---|---|\n|c|1.1|\n|d|2.2|\n|| 3.3 |"
+        expect(textarea.value).to.eql "|z|x|\n|---|---|\n|c|1.1|\n|d|2.2|\n|| 3.3 |"
 
   describe 'average', ->
     context 'all type of number', ->
@@ -76,7 +79,7 @@ describe 'Table Function', ->
         action()
 
       it 'replace current cell', ->
-        expect(textarea.val()).to.eql "|z|x|\n|---|---|\n|c|10|\n|d|20|\n|e|30|\n|| 20 |"
+        expect(textarea.value).to.eql "|z|x|\n|---|---|\n|c|10|\n|d|20|\n|e|30|\n|| 20 |"
 
     context 'type of string', ->
       beforeEach ->
@@ -86,7 +89,7 @@ describe 'Table Function', ->
         action()
 
       it 'replace current cell', ->
-        expect(textarea.val()).to.eql "|z|x|\n|---|---|\n|c|10pt|\n|d|20pt|\n|e|30pt|\n|| 20 |"
+        expect(textarea.value).to.eql "|z|x|\n|---|---|\n|c|10pt|\n|d|20pt|\n|e|30pt|\n|| 20 |"
 
   describe 'max', ->
     context 'all type of number', ->
@@ -97,7 +100,7 @@ describe 'Table Function', ->
         action()
 
       it 'replace current cell', ->
-        expect(textarea.val()).to.eql "|z|x|\n|---|---|\n|c|10|\n|d|20|\n|e|30|\n|| 30 |"
+        expect(textarea.value).to.eql "|z|x|\n|---|---|\n|c|10|\n|d|20|\n|e|30|\n|| 30 |"
 
     context 'no data', ->
       beforeEach ->
@@ -107,7 +110,7 @@ describe 'Table Function', ->
         action()
 
       it 'nothing do', ->
-        expect(textarea.val()).to.eql text
+        expect(textarea.value).to.eql text
 
   describe 'min', ->
     context 'all type of number', ->
@@ -118,7 +121,7 @@ describe 'Table Function', ->
         action()
 
       it 'replace current cell', ->
-        expect(textarea.val()).to.eql "|z|x|\n|---|---|\n|c|10|\n|d|20|\n|e|30|\n|| 10 |"
+        expect(textarea.value).to.eql "|z|x|\n|---|---|\n|c|10|\n|d|20|\n|e|30|\n|| 10 |"
 
     context 'no data', ->
       beforeEach ->
@@ -128,7 +131,7 @@ describe 'Table Function', ->
         action()
 
       it 'nothing do', ->
-        expect(textarea.val()).to.eql text
+        expect(textarea.value).to.eql text
 
   describe 'count', ->
     context 'all type of number', ->
@@ -139,7 +142,7 @@ describe 'Table Function', ->
         action()
 
       it 'replace current cell', ->
-        expect(textarea.val()).to.eql "|z|x|\n|---|---|\n|c|10|\n|d|20|\n|e|30|\n|| 3 |"
+        expect(textarea.value).to.eql "|z|x|\n|---|---|\n|c|10|\n|d|20|\n|e|30|\n|| 3 |"
 
     context 'no data', ->
       beforeEach ->
@@ -149,4 +152,4 @@ describe 'Table Function', ->
         action()
 
       it 'replace current cell to zero', ->
-        expect(textarea.val()).to.eql "|z|x|\n|---|---|\n|| 0 |"
+        expect(textarea.value).to.eql "|z|x|\n|---|---|\n|| 0 |"

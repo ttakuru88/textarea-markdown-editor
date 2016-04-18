@@ -8,13 +8,11 @@ describe 'Support table input', ->
     keyCode = 13
 
     beforeEach ->
-      textarea = $('<textarea>').markdownEditor()
-      markdownEditor = textarea.data('markdownEditor')
+      textarea = document.createElement('textarea')
+      markdownEditor = window.markdownEditor(textarea)
 
       action = ->
-        enterEvent = $.Event('keydown', keyCode: keyCode, shiftKey: shiftKey)
-
-        textarea.val(text)
+        textarea.value = text
         pos = if currentPos?
           currentPos
         else
@@ -23,7 +21,10 @@ describe 'Support table input', ->
           pos
         markdownEditor.selectionBegin = markdownEditor.selectionEnd = pos
 
-        textarea.trigger(enterEvent)
+        event = new Event('keydown')
+        event.keyCode = keyCode
+        event.shiftKey = shiftKey
+        textarea.dispatchEvent(event)
 
     afterEach ->
       textarea = null
@@ -40,7 +41,7 @@ describe 'Support table input', ->
         action()
 
       it 'insert sep and row', ->
-        expect(textarea.val()).to.eql "|a|b|\n| --- | --- |\n|  |  |"
+        expect(textarea.value).to.eql "|a|b|\n| --- | --- |\n|  |  |"
 
       it 'select first cell', ->
         expect(markdownEditor.selectionBegin).to.eql 22
@@ -51,7 +52,7 @@ describe 'Support table input', ->
 
       it 'insert sep and row with 2 columns', ->
         action()
-        expect(textarea.val()).to.eql "|a|b\\|c|\n| --- | --- |\n|  |  |"
+        expect(textarea.value).to.eql "|a|b\\|c|\n| --- | --- |\n|  |  |"
 
     context 'in table header', ->
       beforeEach ->
@@ -60,7 +61,7 @@ describe 'Support table input', ->
         action()
 
       it 'not insert', ->
-        expect(textarea.val()).to.eql "|a|b|\n|---|---|\n|aa|bb|"
+        expect(textarea.value).to.eql "|a|b|\n|---|---|\n|aa|bb|"
 
     context 'in table', ->
       beforeEach ->
@@ -68,7 +69,7 @@ describe 'Support table input', ->
         action()
 
       it 'insert row only', ->
-        expect(textarea.val()).to.eql "|a|b|\n|---|---|\n|aa|bb|\n|  |  |"
+        expect(textarea.value).to.eql "|a|b|\n|---|---|\n|aa|bb|\n|  |  |"
 
       it 'select first cell of second row', ->
         expect(markdownEditor.selectionBegin).to.eql 26
@@ -81,7 +82,7 @@ describe 'Support table input', ->
         action()
 
       it 'insert sep and row', ->
-        expect(textarea.val()).to.eql "|a|b|\n| --- | --- |\n|  |  |"
+        expect(textarea.value).to.eql "|a|b|\n| --- | --- |\n|  |  |"
 
       it 'select first cell of second row', ->
         expect(markdownEditor.selectionBegin).to.eql 22
@@ -94,7 +95,7 @@ describe 'Support table input', ->
         action()
 
       it 'nothing do', ->
-        expect(textarea.val()).to.eql "|a|b|\n|---|---|\n|c|d|\n"
+        expect(textarea.value).to.eql "|a|b|\n|---|---|\n|c|d|\n"
 
     context 'new line on empty row', ->
       beforeEach ->
@@ -103,7 +104,7 @@ describe 'Support table input', ->
 
       it 'remove current line', ->
         action()
-        expect(textarea.val()).to.eql "|a|b|\n|---|---|\n"
+        expect(textarea.value).to.eql "|a|b|\n|---|---|\n"
 
     context 'enter tab key', ->
       beforeEach -> keyCode = 9

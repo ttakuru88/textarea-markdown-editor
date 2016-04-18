@@ -6,10 +6,10 @@ describe '#getPosBegninningOfLines', ->
   markdownEditor = null
 
   beforeEach ->
-    textarea = $('<textarea>').markdownEditor()
-    markdownEditor = textarea.data('markdownEditor')
+    textarea = document.createElement('textarea')
+    markdownEditor = window.markdownEditor(textarea)
 
-    textarea.val("abc\ndef\nfgh")
+    textarea.value = "abc\ndef\nfgh"
 
     action = ->
       markdownEditor.getSelectionStart = -> selectionStart

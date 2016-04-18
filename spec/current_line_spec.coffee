@@ -7,16 +7,15 @@ describe '#getCurrentLine', ->
     secondLine = null
 
     beforeEach ->
-      textarea = $('<textarea>').markdownEditor()
-      markdownEditor = textarea.data('markdownEditor')
-      downEvent = $.Event('keydown', keyCode: 40)
-      enterEvent = $.Event('keydown', keyCode: 13)
+      textarea = document.createElement('textarea')
+      markdownEditor = window.markdownEditor(textarea)
+
       firstLine = 'abcdefg'
       secondLine = 'AAABBB'
 
       action = ->
-        textarea.val("#{firstLine}\n#{secondLine}")
-        textarea.data('markdownEditor').getSelectionStart = ->
+        textarea.value = "#{firstLine}\n#{secondLine}"
+        markdownEditor.getSelectionStart = ->
           cursorPos
 
         markdownEditor.getCurrentLine()

@@ -5,20 +5,21 @@ describe 'Auto make table', ->
     keyCode = 32 # space
 
     beforeEach ->
-      textarea = $('<textarea>').markdownEditor()
-      markdownEditor = textarea.data('markdownEditor')
+      textarea = document.createElement('textarea')
+      markdownEditor = window.markdownEditor(textarea)
 
       action = (text, selectionStart = text.length, selectionEnd = text.length) ->
-        enterEvent = $.Event('keydown', keyCode: keyCode, shiftKey: true)
-
-        textarea.val(text)
+        textarea.value = text
 
         markdownEditor.getSelectionStart = -> selectionStart
         markdownEditor.getSelectionEnd = -> selectionEnd
         markdownEditor.selectionBegin = selectionStart
         markdownEditor.selectionEnd = selectionEnd
 
-        textarea.trigger(enterEvent)
+        event = new Event('keydown')
+        event.keyCode = keyCode
+        event.shiftKey = true
+        textarea.dispatchEvent(event)
 
     afterEach ->
       textarea = null
@@ -31,7 +32,7 @@ describe 'Auto make table', ->
         action('axc')
 
       it 'nothing do', ->
-        expect(textarea.val()).to.eql 'axc'
+        expect(textarea.value).to.eql 'axc'
 
     context '"3x2"', ->
       context 'select range', ->
@@ -39,32 +40,32 @@ describe 'Auto make table', ->
           action('3x2', 1, 2)
 
         it 'nothing do', ->
-          expect(textarea.val()).to.eql '3x2'
+          expect(textarea.value).to.eql '3x2'
 
       context 'unselect range', ->
         beforeEach ->
           action('3x2')
 
         it 'make table', ->
-          expect(textarea.val()).to.eql "|  |  |  |\n| --- | --- | --- |\n|  |  |  |"
+          expect(textarea.value).to.eql "|  |  |  |\n| --- | --- | --- |\n|  |  |  |"
 
     context '":3x2"', ->
       beforeEach ->
         action(':3x2')
 
       it 'make table and align left', ->
-        expect(textarea.val()).to.eql "|  |  |  |\n| :--- | :--- | :--- |\n|  |  |  |"
+        expect(textarea.value).to.eql "|  |  |  |\n| :--- | :--- | :--- |\n|  |  |  |"
 
     context '"3x2:"', ->
       beforeEach ->
         action('3x2:')
 
       it 'make table and align right', ->
-        expect(textarea.val()).to.eql "|  |  |  |\n| ---: | ---: | ---: |\n|  |  |  |"
+        expect(textarea.value).to.eql "|  |  |  |\n| ---: | ---: | ---: |\n|  |  |  |"
 
     context '":3x2:"', ->
       beforeEach ->
         action(':3x2:')
 
       it 'make table and align center', ->
-        expect(textarea.val()).to.eql "|  |  |  |\n| :---: | :---: | :---: |\n|  |  |  |"
+        expect(textarea.value).to.eql "|  |  |  |\n| :---: | :---: | :---: |\n|  |  |  |"

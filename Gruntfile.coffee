@@ -13,7 +13,7 @@ module.exports = (grunt) ->
     coffee:
       main:
         files:
-          'dist/jquery.textarea-markdown-editor.js': 'src/jquery.textarea-markdown-editor.coffee'
+          'dist/textarea-markdown-editor.js': 'src/textarea-markdown-editor.coffee'
     copy:
       main:
         files:

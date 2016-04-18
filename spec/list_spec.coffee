@@ -9,16 +9,14 @@ describe 'Support list input', ->
     shiftKey = false
 
     beforeEach ->
-      textarea = $('<textarea>').markdownEditor()
-      markdownEditor = textarea.data('markdownEditor')
+      textarea = document.createElement('textarea')
+      markdownEditor = window.markdownEditor(textarea)
       selectionStart = null
       selectionEnd = null
       shiftKey = false
 
       action = ->
-        enterEvent = $.Event('keydown', keyCode: keyCode, shiftKey: shiftKey)
-
-        textarea.val(line)
+        textarea.value = line
 
         selectionStart ?= line.length
         markdownEditor.getSelectionStart = -> selectionStart
@@ -26,7 +24,10 @@ describe 'Support list input', ->
         selectionEnd ?= selectionStart
         markdownEditor.getSelectionEnd = -> selectionEnd
 
-        textarea.trigger(enterEvent)
+        event = new Event('keydown')
+        event.keyCode = keyCode
+        event.shiftKey = shiftKey
+        textarea.dispatchEvent(event)
 
     context 'press space', ->
       beforeEach -> keyCode = 32
@@ -36,21 +37,21 @@ describe 'Support list input', ->
 
         it 'do nothing', ->
           action()
-          expect(textarea.val()).to.eql '- [x] a'
+          expect(textarea.value).to.eql '- [x] a'
 
       context 'checkbox line', ->
         beforeEach -> line = '- [ ] a'
 
         it 'do nothing', ->
           action()
-          expect(textarea.val()).to.eql '- [ ] a'
+          expect(textarea.value).to.eql '- [ ] a'
 
       context 'list line', ->
         beforeEach -> line = '- a'
 
         it 'do nothing', ->
           action()
-          expect(textarea.val()).to.eql '- a'
+          expect(textarea.value).to.eql '- a'
 
       context 'and press shift key', ->
         beforeEach -> shiftKey = true
@@ -60,21 +61,21 @@ describe 'Support list input', ->
 
           it 'uncheck', ->
             action()
-            expect(textarea.val()).to.eql '- [ ] a'
+            expect(textarea.value).to.eql '- [ ] a'
 
         context 'checkbox line', ->
           beforeEach -> line = '- [ ] a'
 
           it 'check', ->
             action()
-            expect(textarea.val()).to.eql '- [x] a'
+            expect(textarea.value).to.eql '- [x] a'
 
         context 'list line', ->
           beforeEach -> line = '- a'
 
           it 'do nothing', ->
             action()
-            expect(textarea.val()).to.eql '- a'
+            expect(textarea.value).to.eql '- a'
 
     context 'press tab', ->
       beforeEach -> keyCode = 9
@@ -85,21 +86,21 @@ describe 'Support list input', ->
 
           it 'insert space', ->
             action()
-            expect(textarea.val()).to.eql 'aaa    '
+            expect(textarea.value).to.eql 'aaa    '
 
         context 'hr line', ->
           beforeEach -> line = '- - - - - -'
 
           it 'insert tab', ->
             action()
-            expect(textarea.val()).to.eql '- - - - - -    '
+            expect(textarea.value).to.eql '- - - - - -    '
 
         context 'list line', ->
           beforeEach -> line = '- aaa'
 
           it 'inert space at head', ->
             action()
-            expect(textarea.val()).to.eql '    - aaa'
+            expect(textarea.value).to.eql '    - aaa'
 
       context 'selection range', ->
         context 'list lines', ->
@@ -111,7 +112,7 @@ describe 'Support list input', ->
             action()
 
           it 'insert space to all beginning of lines', ->
-            expect(textarea.val()).to.eql "    - abc\n      - def"
+            expect(textarea.value).to.eql "    - abc\n      - def"
 
           it 'selected indent lines', ->
             expect(markdownEditor.selectionBegin).to.eql 0
@@ -126,7 +127,7 @@ describe 'Support list input', ->
             action()
 
           it 'insert space to all beginning of lines', ->
-            expect(textarea.val()).to.eql "    12345\n      abcde"
+            expect(textarea.value).to.eql "    12345\n      abcde"
 
           it 'selected indent lines', ->
             expect(markdownEditor.selectionBegin).to.eql 0
@@ -143,7 +144,7 @@ describe 'Support list input', ->
             action()
 
           it 'remove space on second line', ->
-            expect(textarea.val()).to.eql "- a\n- b\n    - c"
+            expect(textarea.value).to.eql "- a\n- b\n    - c"
 
           it 'cursor position is beginning of line', ->
             expect(markdownEditor.selectionBegin).to.eql 4
@@ -154,7 +155,7 @@ describe 'Support list input', ->
             action()
 
           it 'remove space on second line', ->
-            expect(textarea.val()).to.eql "- a\n- b\n    - c"
+            expect(textarea.value).to.eql "- a\n- b\n    - c"
 
           it 'cursor position is beginning of line', ->
             expect(markdownEditor.selectionBegin).to.eql 5
@@ -167,56 +168,56 @@ describe 'Support list input', ->
 
         it 'do nothing', ->
           action()
-          expect(textarea.val()).to.eql ''
+          expect(textarea.value).to.eql ''
 
       context 'chars line', ->
         beforeEach -> line = 'abc'
 
         it 'do nothing', ->
           action()
-          expect(textarea.val()).to.eql 'abc'
+          expect(textarea.value).to.eql 'abc'
 
       context 'start with "- - - - -"', ->
         beforeEach -> line = '- - - - -'
 
         it 'do nothing', ->
           action()
-          expect(textarea.val()).to.eql '- - - - -'
+          expect(textarea.value).to.eql '- - - - -'
 
       context 'start with "- - - - - a"', ->
         beforeEach -> line = '- - - - - a'
 
         it 'start with "- " next line', ->
           action()
-          expect(textarea.val()).to.eql "- - - - - a\n- "
+          expect(textarea.value).to.eql "- - - - - a\n- "
 
       context 'start with "* * * * *"', ->
         beforeEach -> line = '* * * * *'
 
         it 'do nothing', ->
           action()
-          expect(textarea.val()).to.eql '* * * * *'
+          expect(textarea.value).to.eql '* * * * *'
 
       context 'start with "* * * * * a"', ->
         beforeEach -> line = '* * * * * a'
 
         it 'start with "* " next line', ->
           action()
-          expect(textarea.val()).to.eql "* * * * * a\n* "
+          expect(textarea.value).to.eql "* * * * * a\n* "
 
       context 'start with "* * - * *"', ->
         beforeEach -> line = '* * - * *'
 
         it 'start with "* " next line', ->
           action()
-          expect(textarea.val()).to.eql "* * - * *\n* "
+          expect(textarea.value).to.eql "* * - * *\n* "
 
       context 'only "- "', ->
         beforeEach -> line = '- '
 
         it 'delete line', ->
           action()
-          expect(textarea.val()).to.eql ''
+          expect(textarea.value).to.eql ''
 
       context 'start with "- "', ->
         beforeEach -> line = '- abc'
@@ -224,46 +225,46 @@ describe 'Support list input', ->
         context 'cursor on end of line', ->
           it 'start with "- " next line', ->
             action()
-            expect(textarea.val()).to.eql "- abc\n- "
+            expect(textarea.value).to.eql "- abc\n- "
 
         context 'cursor on beginning of line', ->
           beforeEach -> selectionStart = 0
 
           it 'do nothing', ->
             action()
-            expect(textarea.val()).to.eql "- abc"
+            expect(textarea.value).to.eql "- abc"
 
       context 'start with "* "', ->
         beforeEach -> line = '* abc'
 
         it 'start with "* " next line', ->
           action()
-          expect(textarea.val()).to.eql "* abc\n* "
+          expect(textarea.value).to.eql "* abc\n* "
 
       context 'start with "55. "', ->
         beforeEach -> line = '55. abc'
 
         it 'start with "55. " next line', ->
           action()
-          expect(textarea.val()).to.eql "55. abc\n55. "
+          expect(textarea.value).to.eql "55. abc\n55. "
 
       context 'has many spaces', ->
         beforeEach -> line = '-  abc'
 
         it 'keep spaces next line', ->
           action()
-          expect(textarea.val()).to.eql "-  abc\n-  "
+          expect(textarea.value).to.eql "-  abc\n-  "
 
       context 'start with "- [ ] "', ->
         beforeEach -> line = '- [ ] abc'
 
         it 'start with "- [ ] "', ->
           action()
-          expect(textarea.val()).to.eql "- [ ] abc\n- [ ] "
+          expect(textarea.value).to.eql "- [ ] abc\n- [ ] "
 
       context 'start with "- [x] "', ->
         beforeEach -> line = '- [x] abc'
 
         it 'start with "- [x] "', ->
           action()
-          expect(textarea.val()).to.eql "- [x] abc\n- [x] "
+          expect(textarea.value).to.eql "- [x] abc\n- [x] "

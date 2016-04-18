@@ -23,14 +23,12 @@ class MarkdownEditor
   tableFunctions = ['sum', 'average', 'max', 'min', 'count']
 
   constructor: (@el, @options) ->
-    @$el = $(@el)
-
     @selectionBegin = @selectionEnd = 0
 
     @tabSpaces = ''
     @tabSpaces += ' ' for i in [0...@options.tabSize]
 
-    @$el.on 'keydown.markdownEditor', (e) =>
+    @el.addEventListener 'keydown', (e) =>
       if e.keyCode == KeyCodes.enter && !e.shiftKey
         @supportInputListFormat(e)  if @options.list
         @supportInputTableFormat(e) if @options.table
@@ -728,8 +726,9 @@ class MarkdownEditor
     @el.selectionEnd
 
   destroy: ->
-    @$el.off('keydown.markdownEditor').data('markdownEditor', null)
-    @$el = null
+    @el.removeEventListener('keydown')
+    @el.dataset.markdownEditor = null
+    @el = null
 
   startUpload: (name) ->
     text = @getTextArray()
@@ -768,11 +767,11 @@ class MarkdownEditor
     else
       @insert(@getTextArray(), finishedUploadText)
 
-$.fn.markdownEditor = (options = {}) ->
+window.markdownEditor = (el, options = {}) ->
   if typeof options == 'string'
     args = Array.prototype.slice.call(arguments).slice(1)
 
-    markdownEditor = @data('markdownEditor')
+    markdownEditor = el.dataset.markdownEditor
     return markdownEditor[options]?.apply(markdownEditor, args)
   else
     options = $.extend
@@ -797,7 +796,4 @@ $.fn.markdownEditor = (options = {}) ->
         "![Uploading... #{name}]()"
     , options
 
-    @each ->
-      $(@).data('markdownEditor', new MarkdownEditor(@, options))
-
-    @
+    el.dataset.markdownEditor = new MarkdownEditor(el, options)

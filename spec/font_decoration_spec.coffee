@@ -6,8 +6,8 @@ describe 'font decoration', ->
   setText = null
 
   beforeEach ->
-    textarea = $('<textarea>').markdownEditor()
-    markdownEditor = textarea.data('markdownEditor')
+    textarea = document.createElement('textarea')
+    markdownEditor = window.markdownEditor(textarea)
 
     action = ->
       markdownEditor.wrap('--')
@@ -16,11 +16,9 @@ describe 'font decoration', ->
       markdownEditor.selectionBegin = pos
       markdownEditor.selectionEnd = pos
 
-      textarea.trigger(enterEvent)
-
   describe '#wrap', ->
     beforeEach ->
-      textarea.val('!LGTM!')
+      textarea.value = '!LGTM!'
       markdownEditor.getSelectionStart = -> 1
       markdownEditor.getSelectionEnd = -> 5
       markdownEditor.selectionBegin = 1
@@ -28,4 +26,4 @@ describe 'font decoration', ->
       markdownEditor.wrap('--')
 
     it 'wrapped in "--"', ->
-      expect(textarea.val()).to.eql '!--LGTM--!'
+      expect(textarea.value).to.eql '!--LGTM--!'

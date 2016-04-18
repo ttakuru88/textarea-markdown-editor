@@ -8,12 +8,10 @@ describe 'Support codeblock input', ->
     keyCode = 13
 
     beforeEach ->
-      textarea = $('<textarea>').markdownEditor()
-      markdownEditor = textarea.data('markdownEditor')
+      textarea = $('<textarea>')
+      markdownEditor = window.markdownEditor(textarea[0])
 
       action = ->
-        enterEvent = $.Event('keydown', keyCode: keyCode, shiftKey: shiftKey)
-
         textarea.val(text)
         pos = if currentPos? then currentPos else text.length
 
@@ -21,7 +19,10 @@ describe 'Support codeblock input', ->
           pos
         markdownEditor.selectionBegin = markdownEditor.selectionEnd = pos
 
-        textarea.trigger(enterEvent)
+        event = new Event('keydown')
+        event.keyCode = keyCode
+        event.shiftKey = shiftKey
+        textarea[0].dispatchEvent(event)
 
     afterEach ->
       textarea = null

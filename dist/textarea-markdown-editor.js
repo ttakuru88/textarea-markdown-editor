@@ -38,18 +38,17 @@
 
     tableFunctions = ['sum', 'average', 'max', 'min', 'count'];
 
-    function MarkdownEditor(el, options1) {
+    function MarkdownEditor(el1, options1) {
       var i, k, ref;
-      this.el = el;
+      this.el = el1;
       this.options = options1;
       this.onPressTab = bind(this.onPressTab, this);
-      this.$el = $(this.el);
       this.selectionBegin = this.selectionEnd = 0;
       this.tabSpaces = '';
       for (i = k = 0, ref = this.options.tabSize; 0 <= ref ? k < ref : k > ref; i = 0 <= ref ? ++k : --k) {
         this.tabSpaces += ' ';
       }
-      this.$el.on('keydown.markdownEditor', (function(_this) {
+      this.el.addEventListener('keydown', (function(_this) {
         return function(e) {
           var currentLine, text;
           if (e.keyCode === KeyCodes.enter && !e.shiftKey) {
@@ -1022,8 +1021,9 @@
     };
 
     MarkdownEditor.prototype.destroy = function() {
-      this.$el.off('keydown.markdownEditor').data('markdownEditor', null);
-      return this.$el = null;
+      this.el.removeEventListener('keydown');
+      this.el.dataset.markdownEditor = null;
+      return this.el = null;
     };
 
     MarkdownEditor.prototype.startUpload = function(name) {
@@ -1078,14 +1078,14 @@
 
   })();
 
-  $.fn.markdownEditor = function(options) {
+  window.markdownEditor = function(el, options) {
     var args, markdownEditor, ref;
     if (options == null) {
       options = {};
     }
     if (typeof options === 'string') {
       args = Array.prototype.slice.call(arguments).slice(1);
-      markdownEditor = this.data('markdownEditor');
+      markdownEditor = el.dataset.markdownEditor;
       return (ref = markdownEditor[options]) != null ? ref.apply(markdownEditor, args) : void 0;
     } else {
       options = $.extend({
@@ -1110,10 +1110,7 @@
           return "![Uploading... " + name + "]()";
         }
       }, options);
-      this.each(function() {
-        return $(this).data('markdownEditor', new MarkdownEditor(this, options));
-      });
-      return this;
+      return el.dataset.markdownEditor = new MarkdownEditor(el, options);
     }
   };
 

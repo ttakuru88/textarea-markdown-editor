@@ -2,26 +2,27 @@
 <html>
 <head>
 <meta charset="UTF-8" />
-<title>jquery.textarea-markdown-editor</title>
+<title>textarea-markdown-editor</title>
 
 <script src="./jquery.js"></script>
 <script src="./marked.min.js"></script>
-<script src="./jquery.textarea-markdown-editor.js"></script>
+<script src="./textarea-markdown-editor.js"></script>
 
 <script>
   $(function(){
     var $editor = $('#editor');
     var $preview = $('#preview');
 
-    $editor.markdownEditor({
+    markdownEditor($editor[0], {
       onInsertedList: function(){ console.log("inserted list"); },
       onInsertedTable: function(){ console.log("inserted table"); },
       onInsertedCodeblock: function(){ console.log("inserted codeblock"); },
       onMadeTable: function(){ console.log("made table"); },
       onSortedTable: function(){ console.log("sorted table"); }
-    }).focus();
+    })
+    $editor.focus();
 
-   t= setInterval(function(){
+   t = setInterval(function(){
       $preview.html(marked($editor[0].value));
     }, 1000);
   });
@@ -75,7 +76,7 @@
 <body>
 
 <header>
-  <h1>jquery.textarea-markdown-editor DEMO</h1>
+  <h1>textarea-markdown-editor DEMO</h1>
 </header>
 
 <main>
@@ -118,7 +119,7 @@ Lisa, 18, F
 </main>
 
 <footer>
-  <a href="https://github.com/ttakuru88/jquery.textarea-markdown-editor">https://github.com/ttakuru88/jquery.textarea-markdown-editor</a>
+  <a href="https://github.com/ttakuru88/textarea-markdown-editor">https://github.com/ttakuru88/textarea-markdown-editor</a>
 </footer>
 
 </body>
