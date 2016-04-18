@@ -1,3 +1,6 @@
+## v1.0.0
+* Dropped jQuery dependency.
+
 ## v0.9.0
 * Table functions.
 

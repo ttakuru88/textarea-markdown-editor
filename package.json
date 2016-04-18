@@ -1,6 +1,6 @@
 {
   "name": "textarea-markdown-editor",
-  "version": "0.9.1",
+  "version": "1.0.0",
   "description": "",
   "main": "dist/textarea-markdown-editor.js",
   "dependencies": {
