@@ -1,4 +1,4 @@
-## jquery.textarea-markdown-editor
+## textarea-markdown-editor
 
 ## Demo
 
@@ -11,13 +11,15 @@
 via Bower
 
 ```bash
-bower install jquery.textarea-markdown-editor
+bower install textarea-markdown-editor
 ```
 
 ## Usage
 
 ```js
-$('textarea').markdownEditor();
+textarea = document.getElementById('textarea')
+options = {}
+markdownEditor(textarea, options)
 ```
 
 ## Demo
