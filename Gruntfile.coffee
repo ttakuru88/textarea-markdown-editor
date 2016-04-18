@@ -18,7 +18,6 @@ module.exports = (grunt) ->
       main:
         files:
           'dist/index.html': 'src/index.html'
-          'dist/jquery.js': 'bower_components/jquery/dist/jquery.min.js'
           'dist/marked.min.js': 'bower_components/marked/marked.min.js'
     karma:
       continuous:

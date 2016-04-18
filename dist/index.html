@@ -4,28 +4,27 @@
 <meta charset="UTF-8" />
 <title>textarea-markdown-editor</title>
 
-<script src="./jquery.js"></script>
 <script src="./marked.min.js"></script>
 <script src="./textarea-markdown-editor.js"></script>
 
 <script>
-  $(function(){
-    var $editor = $('#editor');
-    var $preview = $('#preview');
+  window.onload = function(){
+    var editor = document.getElementById('editor');
+    var preview = document.getElementById('preview');
 
-    markdownEditor($editor[0], {
+    markdownEditor(editor, {
       onInsertedList: function(){ console.log("inserted list"); },
       onInsertedTable: function(){ console.log("inserted table"); },
       onInsertedCodeblock: function(){ console.log("inserted codeblock"); },
       onMadeTable: function(){ console.log("made table"); },
       onSortedTable: function(){ console.log("sorted table"); }
     })
-    $editor.focus();
+    editor.focus();
 
    t = setInterval(function(){
-      $preview.html(marked($editor[0].value));
+      preview.innerHTML = marked(editor.value);
     }, 1000);
-  });
+  }
 </script>
 
 <style>

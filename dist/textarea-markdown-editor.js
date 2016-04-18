@@ -1,5 +1,5 @@
 (function() {
-  var KeyCodes, MarkdownEditor,
+  var KeyCodes, MarkdownEditor, defaultOptions,
     bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   KeyCodes = {
@@ -1078,8 +1078,31 @@
 
   })();
 
+  defaultOptions = {
+    tabSize: 4,
+    onInsertedList: null,
+    onInsertedTable: null,
+    onInsertedCodeblock: null,
+    onSortedTable: null,
+    onMadeTable: null,
+    tabToSpace: true,
+    list: true,
+    table: true,
+    fontDecorate: true,
+    codeblock: true,
+    autoTable: true,
+    tableSeparator: '---',
+    csvToTable: true,
+    sortTable: true,
+    tableFunction: true,
+    significantFigures: 4,
+    uploadingFormat: function(name) {
+      return "![Uploading... " + name + "]()";
+    }
+  };
+
   window.markdownEditor = function(el, options) {
-    var args, markdownEditor, ref;
+    var args, defaultOptionName, markdownEditor, ref, value;
     if (options == null) {
       options = {};
     }
@@ -1088,28 +1111,12 @@
       markdownEditor = el.dataset.markdownEditor;
       return (ref = markdownEditor[options]) != null ? ref.apply(markdownEditor, args) : void 0;
     } else {
-      options = $.extend({
-        tabSize: 4,
-        onInsertedList: null,
-        onInsertedTable: null,
-        onInsertedCodeblock: null,
-        onSortedTable: null,
-        onMadeTable: null,
-        tabToSpace: true,
-        list: true,
-        table: true,
-        fontDecorate: true,
-        codeblock: true,
-        autoTable: true,
-        tableSeparator: '---',
-        csvToTable: true,
-        sortTable: true,
-        tableFunction: true,
-        significantFigures: 4,
-        uploadingFormat: function(name) {
-          return "![Uploading... " + name + "]()";
+      for (defaultOptionName in defaultOptions) {
+        value = defaultOptions[defaultOptionName];
+        if (options[defaultOptionName] == null) {
+          options[defaultOptionName] = value;
         }
-      }, options);
+      }
       return el.dataset.markdownEditor = new MarkdownEditor(el, options);
     }
   };

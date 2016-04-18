@@ -767,6 +767,27 @@ class MarkdownEditor
     else
       @insert(@getTextArray(), finishedUploadText)
 
+defaultOptions =
+  tabSize: 4
+  onInsertedList: null
+  onInsertedTable: null
+  onInsertedCodeblock: null
+  onSortedTable: null
+  onMadeTable: null
+  tabToSpace: true
+  list: true
+  table: true
+  fontDecorate: true
+  codeblock: true
+  autoTable: true
+  tableSeparator: '---'
+  csvToTable: true
+  sortTable: true
+  tableFunction: true
+  significantFigures: 4
+  uploadingFormat: (name) ->
+    "![Uploading... #{name}]()"
+
 window.markdownEditor = (el, options = {}) ->
   if typeof options == 'string'
     args = Array.prototype.slice.call(arguments).slice(1)
@@ -774,26 +795,7 @@ window.markdownEditor = (el, options = {}) ->
     markdownEditor = el.dataset.markdownEditor
     return markdownEditor[options]?.apply(markdownEditor, args)
   else
-    options = $.extend
-      tabSize: 4
-      onInsertedList: null
-      onInsertedTable: null
-      onInsertedCodeblock: null
-      onSortedTable: null
-      onMadeTable: null
-      tabToSpace: true
-      list: true
-      table: true
-      fontDecorate: true
-      codeblock: true
-      autoTable: true
-      tableSeparator: '---'
-      csvToTable: true
-      sortTable: true
-      tableFunction: true
-      significantFigures: 4
-      uploadingFormat: (name) ->
-        "![Uploading... #{name}]()"
-    , options
+    for defaultOptionName, value of defaultOptions
+       options[defaultOptionName] ?= value
 
     el.dataset.markdownEditor = new MarkdownEditor(el, options)

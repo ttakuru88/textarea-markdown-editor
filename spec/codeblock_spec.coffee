@@ -8,11 +8,11 @@ describe 'Support codeblock input', ->
     keyCode = 13
 
     beforeEach ->
-      textarea = $('<textarea>')
-      markdownEditor = window.markdownEditor(textarea[0])
+      textarea = document.createElement('textarea')
+      markdownEditor = window.markdownEditor(textarea)
 
       action = ->
-        textarea.val(text)
+        textarea.value = text
         pos = if currentPos? then currentPos else text.length
 
         markdownEditor.getSelectionStart = ->
@@ -22,7 +22,7 @@ describe 'Support codeblock input', ->
         event = new Event('keydown')
         event.keyCode = keyCode
         event.shiftKey = shiftKey
-        textarea[0].dispatchEvent(event)
+        textarea.dispatchEvent(event)
 
     afterEach ->
       textarea = null
@@ -43,7 +43,7 @@ describe 'Support codeblock input', ->
             action()
 
           it 'do nothing', ->
-            expect(textarea.val()).to.eql "```\n```"
+            expect(textarea.value).to.eql "```\n```"
 
         context 'input begin codeblock format', ->
           beforeEach ->
@@ -55,13 +55,13 @@ describe 'Support codeblock input', ->
               action()
 
             it 'do nothing', ->
-              expect(textarea.val()).to.eql "```\n\n```abc\n\n```"
+              expect(textarea.value).to.eql "```\n\n```abc\n\n```"
 
           context 'at second line', ->
             beforeEach -> action()
 
             it 'do nothing', ->
-              expect(textarea.val()).to.eql "```\n\n```abc\n\n```"
+              expect(textarea.value).to.eql "```\n\n```abc\n\n```"
 
         context 'input text', ->
           beforeEach ->
@@ -69,7 +69,7 @@ describe 'Support codeblock input', ->
             action()
 
           it 'do nothing', ->
-            expect(textarea.val()).to.eql "```\naaa"
+            expect(textarea.value).to.eql "```\naaa"
 
       context '~', ->
         beforeEach -> text = "~~~\n"
@@ -80,7 +80,7 @@ describe 'Support codeblock input', ->
             action()
 
           it 'do nothing', ->
-            expect(textarea.val()).to.eql "~~~\n~~~"
+            expect(textarea.value).to.eql "~~~\n~~~"
 
         context 'input begin codeblock format', ->
           beforeEach ->
@@ -88,7 +88,7 @@ describe 'Support codeblock input', ->
             action()
 
           it 'do nothing', ->
-            expect(textarea.val()).to.eql "~~~\n~~~abc"
+            expect(textarea.value).to.eql "~~~\n~~~abc"
 
         context 'input text', ->
           beforeEach ->
@@ -96,7 +96,7 @@ describe 'Support codeblock input', ->
             action()
 
           it 'do nothing', ->
-            expect(textarea.val()).to.eql "~~~\naaa"
+            expect(textarea.value).to.eql "~~~\naaa"
 
     context 'without codeblock', ->
       context '```', ->
@@ -107,7 +107,7 @@ describe 'Support codeblock input', ->
           beforeEach -> action()
 
           it 'insert end codeblock', ->
-            expect(textarea.val()).to.eql "```\n\n```"
+            expect(textarea.value).to.eql "```\n\n```"
 
         context 'input begin codeblock format with language', ->
           beforeEach ->
@@ -117,7 +117,7 @@ describe 'Support codeblock input', ->
             beforeEach -> action()
 
             it 'insert end codeblock', ->
-              expect(textarea.val()).to.eql "```abc\n\n```"
+              expect(textarea.value).to.eql "```abc\n\n```"
 
           context 'caret pos is beginning of line', ->
             beforeEach ->
@@ -125,7 +125,7 @@ describe 'Support codeblock input', ->
               action()
 
             it 'do nothing', ->
-              expect(textarea.val()).to.eql "```abc"
+              expect(textarea.value).to.eql "```abc"
 
         context 'input begin codeblock format with language and spaces', ->
           beforeEach ->
@@ -133,7 +133,7 @@ describe 'Support codeblock input', ->
             action()
 
           it 'insert end codeblock', ->
-            expect(textarea.val()).to.eql "```abc   \n\n```"
+            expect(textarea.value).to.eql "```abc   \n\n```"
 
         context 'input text', ->
           beforeEach ->
@@ -141,7 +141,7 @@ describe 'Support codeblock input', ->
             action()
 
           it 'do nothing', ->
-            expect(textarea.val()).to.eql "```aaa b"
+            expect(textarea.value).to.eql "```aaa b"
 
       context '~~~', ->
         beforeEach ->
@@ -151,7 +151,7 @@ describe 'Support codeblock input', ->
           beforeEach -> action()
 
           it 'insert end codeblock', ->
-            expect(textarea.val()).to.eql "~~~\n\n~~~"
+            expect(textarea.value).to.eql "~~~\n\n~~~"
 
         context 'input begin codeblock format with language', ->
           beforeEach ->
@@ -159,7 +159,7 @@ describe 'Support codeblock input', ->
             action()
 
           it 'insert end codeblock', ->
-            expect(textarea.val()).to.eql "~~~abc\n\n~~~"
+            expect(textarea.value).to.eql "~~~abc\n\n~~~"
 
         context 'input begin codeblock format with language and spaces', ->
           beforeEach ->
@@ -167,7 +167,7 @@ describe 'Support codeblock input', ->
             action()
 
           it 'insert end codeblock', ->
-            expect(textarea.val()).to.eql "~~~abc   \n\n~~~"
+            expect(textarea.value).to.eql "~~~abc   \n\n~~~"
 
         context 'input text', ->
           beforeEach ->
@@ -175,4 +175,4 @@ describe 'Support codeblock input', ->
             action()
 
           it 'do nothing', ->
-            expect(textarea.val()).to.eql "~~~aaa b"
+            expect(textarea.value).to.eql "~~~aaa b"

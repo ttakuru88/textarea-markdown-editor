@@ -3,7 +3,6 @@ module.exports = (config) ->
     basePath: ''
     frameworks: ['mocha', 'expect', 'sinon']
     files: [
-      'bower_components/jquery/dist/jquery.min.js'
       'dist/textarea-markdown-editor.js'
       'dist/index.html'
       'spec/spec_helper.coffee'
