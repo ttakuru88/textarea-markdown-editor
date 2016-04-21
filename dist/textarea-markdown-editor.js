@@ -266,6 +266,9 @@
       if (!matches) {
         return;
       }
+      if (matches[2] <= 0 || matches[3] <= 0) {
+        return;
+      }
       e.preventDefault();
       alignLeft = !!matches[1].length;
       alignRight = !!matches[4].length;

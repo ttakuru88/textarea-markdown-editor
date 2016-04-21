@@ -56,6 +56,13 @@ describe 'Auto make table', ->
       it 'make table and align left', ->
         expect(textarea.value).to.eql "|  |  |  |\n| :--- | :--- | :--- |\n|  |  |  |"
 
+    context '"0x2"', ->
+      beforeEach ->
+        action('0x2')
+
+      it 'do nothing', ->
+        expect(textarea.value).to.eql "0x2"
+
     context '"3x2:"', ->
       beforeEach ->
         action('3x2:')

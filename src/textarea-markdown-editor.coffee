@@ -192,7 +192,7 @@ class MarkdownEditor
     return if @isSelectRange()
     matches = currentLine.match(makingTableFormat)
     return unless matches
-
+    return if matches[2] <= 0 || matches[3] <= 0
 
     e.preventDefault()
 
