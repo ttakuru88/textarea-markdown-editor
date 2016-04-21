@@ -357,6 +357,7 @@
       }
       text.splice(startPos, endPos - startPos, table);
       this.el.value = text.join('');
+      this.setSelectionRange(startPos, startPos + table.length);
       return typeof (base = this.options).onMadeTable === "function" ? base.onMadeTable(e) : void 0;
     };
 

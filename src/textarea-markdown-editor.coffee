@@ -264,6 +264,7 @@ class MarkdownEditor
 
     text.splice(startPos, endPos - startPos, table)
     @el.value = text.join('')
+    @setSelectionRange(startPos, startPos + table.length)
 
     @options.onMadeTable?(e)
 
