@@ -1,3 +1,6 @@
+## v1.1.0
+* Can Undo
+
 ## v1.0.0
 * Dropped jQuery dependency.
 
