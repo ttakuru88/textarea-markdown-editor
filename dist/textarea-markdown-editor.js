@@ -996,12 +996,16 @@
     };
 
     MarkdownEditor.prototype.replace = function(textArray, text, beginPos, endPos, select) {
-      var result;
+      var error1, result;
       if (select == null) {
         select = false;
       }
       this.setSelectionRange(beginPos, endPos);
-      result = typeof document.execCommand === "function" ? document.execCommand('insertText', false, text) : void 0;
+      try {
+        result = typeof document.execCommand === "function" ? document.execCommand('insertText', false, text) : void 0;
+      } catch (error1) {
+        result = false;
+      }
       if (!result) {
         this.replaceValue(textArray, text, beginPos, endPos);
       }
@@ -1011,11 +1015,19 @@
     };
 
     MarkdownEditor.prototype.replaceValue = function(textArray, insertText, beginPos, endPos) {
-      var pos;
+      var error, error1, error2, pos;
       textArray.splice(beginPos, endPos - beginPos, insertText);
-      document.execCommand('ms-beginUndoUnit');
+      try {
+        document.execCommand('ms-beginUndoUnit');
+      } catch (error1) {
+        error = error1;
+      }
       this.el.value = textArray.join('');
-      document.execCommand('ms-endUndoUnit');
+      try {
+        document.execCommand('ms-endUndoUnit');
+      } catch (error2) {
+        error = error2;
+      }
       pos = beginPos + insertText.length;
       return this.setSelectionRange(pos, pos);
     };

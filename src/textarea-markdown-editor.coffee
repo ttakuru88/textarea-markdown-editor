@@ -697,16 +697,29 @@ class MarkdownEditor
 
   replace: (textArray, text, beginPos, endPos, select = false) ->
     @setSelectionRange(beginPos, endPos)
-    result = document.execCommand?('insertText', false, text)
+
+    try
+      result = document.execCommand?('insertText', false, text)
+    catch
+      result = false
+
     @replaceValue(textArray, text, beginPos, endPos) unless result
     @setSelectionRange(beginPos, beginPos + text.length) if select
 
   replaceValue: (textArray, insertText, beginPos, endPos) ->
     textArray.splice(beginPos, endPos - beginPos, insertText)
 
-    document.execCommand('ms-beginUndoUnit');
+    try
+      document.execCommand('ms-beginUndoUnit');
+    catch error
+      ;
+
     @el.value = textArray.join('')
-    document.execCommand('ms-endUndoUnit');
+
+    try
+      document.execCommand('ms-endUndoUnit');
+    catch error
+      ;
 
     pos = beginPos + insertText.length
     @setSelectionRange(pos, pos)
