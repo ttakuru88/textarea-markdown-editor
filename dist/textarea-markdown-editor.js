@@ -147,9 +147,7 @@
     MarkdownEditor.prototype.replaceCurrentLine = function(text, pos, oldLine, newLine) {
       var beginPos;
       beginPos = this.getPosBeginningOfLine(text, pos);
-      text.splice(beginPos, oldLine.length, newLine);
-      this.el.value = text.join('');
-      return this.setSelectionRange(pos, pos);
+      return this.replace(text, newLine, beginPos, beginPos + oldLine.length);
     };
 
     MarkdownEditor.prototype.supportInputTableFormat = function(e) {
@@ -191,7 +189,7 @@
       for (i = m = 0, ref1 = rows; 0 <= ref1 ? m < ref1 : m > ref1; i = 0 <= ref1 ? ++m : --m) {
         row += '  |';
       }
-      text = this.insert(text, sep + row, prevPos);
+      this.insert(text, sep + row, prevPos);
       pos = prevPos + sep.length + row.length - rows * 3 + 1;
       this.setSelectionRange(pos, pos);
       return typeof (base = this.options).onInsertedTable === "function" ? base.onInsertedTable(e) : void 0;
@@ -355,9 +353,7 @@
           table += "\n";
         }
       }
-      text.splice(startPos, endPos - startPos, table);
-      this.el.value = text.join('');
-      this.setSelectionRange(startPos, startPos + table.length);
+      this.replace(text, table, startPos, endPos);
       return typeof (base = this.options).onMadeTable === "function" ? base.onMadeTable(e) : void 0;
     };
 
@@ -485,9 +481,7 @@
       while (text[ep] && text[ep] !== '|') {
         ep++;
       }
-      text.splice(sp, ep - sp, " " + str + " ");
-      this.el.value = text.join('');
-      return this.setSelectionRange(sp + 1, sp + ("" + str).length + 1);
+      return this.replace(text, " " + str + " ", sp, ep, true);
     };
 
     MarkdownEditor.prototype.sortTable = function(e, text, currentLine) {
@@ -517,8 +511,7 @@
         line = ref1[l];
         body += line.text + "\n";
       }
-      text.splice(data.bodyStart, body.length, body);
-      this.el.value = text.join('');
+      this.replace(text, body, data.bodyStart, data.bodyEnd);
       this.setSelectionRange(prevPos, prevPos);
       return typeof (base = this.options).onSortedTable === "function" ? base.onSortedTable(e) : void 0;
     };
@@ -764,13 +757,10 @@
     };
 
     MarkdownEditor.prototype.removeCurrentLine = function(textArray) {
-      var beginPos, endPos, removeLength;
+      var beginPos, endPos;
       endPos = this.getPosEndOfLine(textArray);
       beginPos = this.getPosBeginningOfLine(textArray);
-      removeLength = endPos - beginPos;
-      textArray.splice(beginPos, removeLength);
-      this.el.value = textArray.join('');
-      return this.setSelectionRange(beginPos, beginPos);
+      return this.replace(textArray, '', beginPos, endPos);
     };
 
     MarkdownEditor.prototype.onPressTab = function(e) {
@@ -806,7 +796,7 @@
     };
 
     MarkdownEditor.prototype.wrap = function(wrapper) {
-      var beginningOfLines, selectionEnd, selectionStart, text;
+      var beginningOfLines, selectedText, selectionEnd, selectionStart, text;
       selectionStart = this.getSelectionStart();
       selectionEnd = this.getSelectionEnd();
       if (selectionStart === selectionEnd) {
@@ -817,9 +807,8 @@
       if (beginningOfLines.length > 1) {
         return false;
       }
-      text.splice(selectionEnd, 0, wrapper);
-      text.splice(selectionStart, 0, wrapper);
-      this.el.value = text.join('');
+      selectedText = text.slice(selectionStart, selectionEnd).join('');
+      this.replace(text, "" + wrapper + selectedText + wrapper, selectionStart, selectionEnd);
       this.setSelectionRange(selectionStart + wrapper.length, selectionEnd + wrapper.length);
       return true;
     };
@@ -999,20 +988,35 @@
       return true;
     };
 
-    MarkdownEditor.prototype.insertSpaces = function(text, pos) {
-      var nextPos;
-      nextPos = this.getSelectionStart() + this.tabSpaces.length;
-      this.insert(text, this.tabSpaces, pos);
-      return this.setSelectionRange(nextPos, nextPos);
-    };
-
     MarkdownEditor.prototype.insert = function(textArray, insertText, pos) {
       if (pos == null) {
         pos = this.getSelectionStart();
       }
-      textArray.splice(pos, 0, insertText);
+      return this.replace(textArray, insertText, pos, pos);
+    };
+
+    MarkdownEditor.prototype.replace = function(textArray, text, beginPos, endPos, select) {
+      var result;
+      if (select == null) {
+        select = false;
+      }
+      this.setSelectionRange(beginPos, endPos);
+      result = typeof document.execCommand === "function" ? document.execCommand('insertText', false, text) : void 0;
+      if (!result) {
+        this.replaceValue(textArray, text, beginPos, endPos);
+      }
+      if (select) {
+        return this.setSelectionRange(beginPos, beginPos + text.length);
+      }
+    };
+
+    MarkdownEditor.prototype.replaceValue = function(textArray, insertText, beginPos, endPos) {
+      var pos;
+      textArray.splice(beginPos, endPos - beginPos, insertText);
+      document.execCommand('ms-beginUndoUnit');
       this.el.value = textArray.join('');
-      pos += insertText.length;
+      document.execCommand('ms-endUndoUnit');
+      pos = beginPos + insertText.length;
       return this.setSelectionRange(pos, pos);
     };
 
@@ -1041,7 +1045,7 @@
       if (pos < text.length - 1 && text[pos] !== "\n") {
         insertText = insertText + "\n";
       }
-      return this.insert(text, insertText, pos);
+      return this.replaceValue(text, insertText, pos, pos);
     };
 
     MarkdownEditor.prototype.cancelUpload = function(name) {
@@ -1070,11 +1074,10 @@
       if (uploadingTextPos >= 0) {
         selectionStart = this.getSelectionStart();
         selectionEnd = this.getSelectionEnd();
-        this.el.value = text.replace(uploadingText, finishedUploadText);
-        pos = selectionStart + (finishedUploadText.length - uploadingText.length);
-        return this.setSelectionRange(pos, pos);
+        return this.replaceValue(this.getTextArray(), finishedUploadText, uploadingTextPos, uploadingTextPos + uploadingText.length);
       } else {
-        return this.insert(this.getTextArray(), finishedUploadText);
+        pos = this.getSelectionStart();
+        return this.replaceValue(this.getTextArray(), finishedUploadText, pos, pos);
       }
     };
 

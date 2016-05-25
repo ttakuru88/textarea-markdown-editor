@@ -97,11 +97,8 @@ class MarkdownEditor
 
   replaceCurrentLine: (text, pos, oldLine, newLine) ->
     beginPos = @getPosBeginningOfLine(text, pos)
-    text.splice(beginPos, oldLine.length, newLine)
 
-    @el.value = text.join('')
-
-    @setSelectionRange(pos, pos)
+    @replace(text, newLine, beginPos, beginPos + oldLine.length)
 
   supportInputTableFormat: (e) ->
     text = @getTextArray()
@@ -132,7 +129,7 @@ class MarkdownEditor
     for i in [0...rows]
       row += '  |'
 
-    text = @insert(text, sep + row, prevPos)
+    @insert(text, sep + row, prevPos)
 
     pos = prevPos + sep.length + row.length - rows * 3 + 1
     @setSelectionRange(pos, pos)
@@ -262,10 +259,7 @@ class MarkdownEditor
           table += " #{@options.tableSeparator} |"
         table += "\n"
 
-    text.splice(startPos, endPos - startPos, table)
-    @el.value = text.join('')
-    @setSelectionRange(startPos, startPos + table.length)
-
+    @replace(text, table, startPos, endPos)
     @options.onMadeTable?(e)
 
   tableFunction: (e, text, currentLine) ->
@@ -350,9 +344,7 @@ class MarkdownEditor
     while text[ep] && text[ep] != '|'
       ep++
 
-    text.splice(sp, ep - sp, " #{str} ")
-    @el.value = text.join('')
-    @setSelectionRange(sp+1, sp + "#{str}".length + 1)
+    @replace(text, " #{str} ", sp, ep, true)
 
   sortTable: (e, text, currentLine) ->
     return if @isSelectRange() || !@isTableHeader(text)
@@ -375,8 +367,7 @@ class MarkdownEditor
     for line in data.lines
       body += "#{line.text}\n"
 
-    text.splice(data.bodyStart, body.length, body)
-    @el.value = text.join('')
+    @replace(text, body, data.bodyStart, data.bodyEnd)
     @setSelectionRange(prevPos, prevPos)
 
     @options.onSortedTable?(e)
@@ -531,11 +522,7 @@ class MarkdownEditor
     endPos   = @getPosEndOfLine(textArray)
     beginPos = @getPosBeginningOfLine(textArray)
 
-    removeLength = endPos - beginPos
-    textArray.splice(beginPos, removeLength)
-
-    @el.value = textArray.join('')
-    @setSelectionRange(beginPos, beginPos)
+    @replace(textArray, '', beginPos, endPos)
 
   onPressTab: (e) =>
     e.preventDefault()
@@ -567,10 +554,8 @@ class MarkdownEditor
     beginningOfLines = @getPosBeginningOfLines(text, selectionStart, selectionEnd)
     return false if beginningOfLines.length > 1
 
-    text.splice(selectionEnd, 0, wrapper)
-    text.splice(selectionStart, 0, wrapper)
-    @el.value = text.join('')
-
+    selectedText = text.slice(selectionStart, selectionEnd).join('')
+    @replace(text, "#{wrapper}#{selectedText}#{wrapper}", selectionStart, selectionEnd)
     @setSelectionRange(selectionStart + wrapper.length, selectionEnd + wrapper.length)
     true
 
@@ -707,17 +692,23 @@ class MarkdownEditor
     @setSelectionRange(sp, eep)
     true
 
-  insertSpaces: (text, pos) ->
-    nextPos = @getSelectionStart() + @tabSpaces.length
-
-    @insert(text, @tabSpaces, pos)
-    @setSelectionRange(nextPos, nextPos)
-
   insert: (textArray, insertText, pos = @getSelectionStart()) ->
-    textArray.splice(pos, 0, insertText)
-    @el.value = textArray.join('')
+    @replace(textArray, insertText, pos, pos)
 
-    pos += insertText.length
+  replace: (textArray, text, beginPos, endPos, select = false) ->
+    @setSelectionRange(beginPos, endPos)
+    result = document.execCommand?('insertText', false, text)
+    @replaceValue(textArray, text, beginPos, endPos) unless result
+    @setSelectionRange(beginPos, beginPos + text.length) if select
+
+  replaceValue: (textArray, insertText, beginPos, endPos) ->
+    textArray.splice(beginPos, endPos - beginPos, insertText)
+
+    document.execCommand('ms-beginUndoUnit');
+    @el.value = textArray.join('')
+    document.execCommand('ms-endUndoUnit');
+
+    pos = beginPos + insertText.length
     @setSelectionRange(pos, pos)
 
   getSelectionStart: ->
@@ -739,7 +730,7 @@ class MarkdownEditor
     insertText = "\n#{insertText}" if pos > 0 && text[pos-1] != "\n"
     insertText = "#{insertText}\n" if pos < text.length - 1 && text[pos] != "\n"
 
-    @insert(text, insertText, pos)
+    @replaceValue(text, insertText, pos, pos)
 
   cancelUpload: (name) ->
     @el.value = @getText().replace(@buildUploadingText(name), '')
@@ -761,12 +752,10 @@ class MarkdownEditor
       selectionStart = @getSelectionStart()
       selectionEnd = @getSelectionEnd()
 
-      @el.value = text.replace(uploadingText, finishedUploadText)
-
-      pos = selectionStart + (finishedUploadText.length - uploadingText.length)
-      @setSelectionRange(pos, pos)
+      @replaceValue(@getTextArray(), finishedUploadText, uploadingTextPos, uploadingTextPos + uploadingText.length)
     else
-      @insert(@getTextArray(), finishedUploadText)
+      pos = @getSelectionStart()
+      @replaceValue(@getTextArray(), finishedUploadText, pos, pos)
 
 defaultOptions =
   tabSize: 4
