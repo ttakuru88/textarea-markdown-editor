@@ -19,14 +19,35 @@ class MarkdownEditor
   makingTableFormat = /^(:?)(\d+)x(\d+)(:?)$/
   numberFormat = /^-?\d+[\d\.]*$/
   functionFormat = /^=\s*(\S+)\s*$/
+  requiredGeneratorMetaTagFormat = /<meta[^>]+?generator[^>]+?>/
+  contentParser = /\scontent=['"]?([^'"]+)['"]?/
+  tsv2tableGenerators = /^Sheets$|^LibreOffice|^Microsoft Excel|^OpenOffice/
 
   tableFunctions = ['sum', 'average', 'max', 'min', 'count']
+
+  clearPastedStrings: ->
+    @pastedStrings = {}
 
   constructor: (@el, @options) ->
     @selectionBegin = @selectionEnd = 0
 
     @tabSpaces = ''
     @tabSpaces += ' ' for i in [0...@options.tabSize]
+
+    if @options.convertSheetToTable
+      @el.addEventListener 'paste', (e) =>
+        return if !e.clipboardData || !e.clipboardData.items
+
+        @clearPastedStrings()
+        items = {}
+        for item in e.clipboardData.items
+          if item.kind == 'string' && /^text\/(plain|html)$/.test(item.type)
+            items[item.type] = item
+
+        if items['text/plain'] && items['text/html'] && items['text/plain'].getAsString && items['text/html'].getAsString
+          e.preventDefault()
+          @getPastedString(items['text/plain'])
+          @getPastedString(items['text/html'])
 
     @el.addEventListener 'keydown', (e) =>
       if e.keyCode == KeyCodes.enter && !e.shiftKey
@@ -40,7 +61,11 @@ class MarkdownEditor
 
         @toggleCheck(e, text, currentLine) if @options.list
         @makeTable(e, text, currentLine) if @options.autoTable
-        @csvToTable(e, text, currentLine) if @options.csvToTable
+        if @options.csvToTable
+          if @csvToTable(@getSelectedText(), text)
+            e.preventDefault()
+            @options.onMadeTable?(e)
+
         @sortTable(e, text, currentLine) if @options.sortTable
         @tableFunction(e, text, currentLine) if @options.tableFunction
 
@@ -223,10 +248,9 @@ class MarkdownEditor
 
     table
 
-  csvToTable: (e, text, currentLine) ->
-    selectedText = @getSelectedText()
-    lines = selectedText.split("\n")
-    return if lines.length <= 1
+  csvToTable: (csv, text = @getTextArray()) ->
+    lines = csv.split("\n")
+    return false if lines.length <= 1
 
     startPos = null
     endPos = @getSelectionStart()
@@ -242,14 +266,29 @@ class MarkdownEditor
 
       endPos += line.length + 1
 
-    return if csvLines <= 1
-
-    e.preventDefault()
+    return false if csvLines.length <= 1
 
     table = @createTableFromArray(csvLines)
-
     @replace(text, table, startPos, endPos)
-    @options.onMadeTable?(e)
+    true
+
+  tsvToTable: (text) ->
+    tsvLines = []
+
+    lines = text.split("\n")
+    for line in lines
+      rows = line.split("\t")
+      if rows.length > 1
+        tsv = true
+        tsvLines.push(rows)
+      else if tsvLines.length > 0
+        break
+
+    return if tsvLines.length <= 1
+
+    table = @createTableFromArray(tsvLines)
+
+    @replace(@getTextArray(), table, @getSelectionStart(), @getSelectionEnd())
 
   createTableFromArray: (csvLines) ->
     table = ''
@@ -265,6 +304,36 @@ class MarkdownEditor
           table += " #{@options.tableSeparator} |"
         table += "\n"
     table
+
+  getPastedString: (item) ->
+    type = item.type
+    item.getAsString (str) => @onGetPastedString(type, str)
+
+  onGetPastedString: (type, str) ->
+    unless str
+      @clearPastedStrings()
+      return
+
+    @pastedStrings[type] = str
+    if @pastedStrings['text/plain'] && @pastedStrings['text/html']
+      metaMatch = @pastedStrings['text/html'].match(requiredGeneratorMetaTagFormat)
+      if metaMatch
+        generatorMatch = metaMatch[0].match(contentParser)
+        if generatorMatch
+          generator = generatorMatch[1]
+          if tsv2tableGenerators.test(generator)
+            @tsvToTable(@pastedStrings['text/plain'])
+          else
+            @restorePlainText()
+        else
+          @restorePlainText()
+      else
+        @restorePlainText()
+
+      @clearPastedStrings()
+
+  restorePlainText: ->
+    @replace(@getTextArray(), @pastedStrings['text/plain'], @getSelectionStart(), @getSelectionEnd())
 
   tableFunction: (e, text, currentLine) ->
     return if @isSelectRange()
@@ -781,6 +850,7 @@ defaultOptions =
   onInsertedCodeblock: null
   onSortedTable: null
   onMadeTable: null
+  convertSheetToTable: true
   tabToSpace: true
   list: true
   table: true

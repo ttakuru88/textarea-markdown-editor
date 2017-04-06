@@ -14,7 +14,7 @@
   };
 
   MarkdownEditor = (function() {
-    var beginCodeblockFormat, emptyRowFormat, endCodeblockFormat, functionFormat, hrFormat, listFormat, makingTableFormat, numberFormat, rowFormat, rowSepFormat, tableFunctions;
+    var beginCodeblockFormat, contentParser, emptyRowFormat, endCodeblockFormat, functionFormat, hrFormat, listFormat, makingTableFormat, numberFormat, requiredGeneratorMetaTagFormat, rowFormat, rowSepFormat, tableFunctions, tsv2tableGenerators;
 
     listFormat = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/;
 
@@ -36,7 +36,17 @@
 
     functionFormat = /^=\s*(\S+)\s*$/;
 
+    requiredGeneratorMetaTagFormat = /<meta[^>]+?generator[^>]+?>/;
+
+    contentParser = /\scontent=['"]?([^'"]+)['"]?/;
+
+    tsv2tableGenerators = /^Sheets$|^LibreOffice|^Microsoft Excel|^OpenOffice/;
+
     tableFunctions = ['sum', 'average', 'max', 'min', 'count'];
+
+    MarkdownEditor.prototype.clearPastedStrings = function() {
+      return this.pastedStrings = {};
+    };
 
     function MarkdownEditor(el1, options1) {
       var i, k, ref;
@@ -48,9 +58,33 @@
       for (i = k = 0, ref = this.options.tabSize; 0 <= ref ? k < ref : k > ref; i = 0 <= ref ? ++k : --k) {
         this.tabSpaces += ' ';
       }
+      if (this.options.convertSheetToTable) {
+        this.el.addEventListener('paste', (function(_this) {
+          return function(e) {
+            var item, items, l, len, ref1;
+            if (!e.clipboardData || !e.clipboardData.items) {
+              return;
+            }
+            _this.clearPastedStrings();
+            items = {};
+            ref1 = e.clipboardData.items;
+            for (l = 0, len = ref1.length; l < len; l++) {
+              item = ref1[l];
+              if (item.kind === 'string' && /^text\/(plain|html)$/.test(item.type)) {
+                items[item.type] = item;
+              }
+            }
+            if (items['text/plain'] && items['text/html'] && items['text/plain'].getAsString && items['text/html'].getAsString) {
+              e.preventDefault();
+              _this.getPastedString(items['text/plain']);
+              return _this.getPastedString(items['text/html']);
+            }
+          };
+        })(this));
+      }
       this.el.addEventListener('keydown', (function(_this) {
         return function(e) {
-          var currentLine, text;
+          var base, currentLine, text;
           if (e.keyCode === KeyCodes.enter && !e.shiftKey) {
             if (_this.options.list) {
               _this.supportInputListFormat(e);
@@ -72,7 +106,12 @@
               _this.makeTable(e, text, currentLine);
             }
             if (_this.options.csvToTable) {
-              _this.csvToTable(e, text, currentLine);
+              if (_this.csvToTable(_this.getSelectedText(), text)) {
+                e.preventDefault();
+                if (typeof (base = _this.options).onMadeTable === "function") {
+                  base.onMadeTable(e);
+                }
+              }
             }
             if (_this.options.sortTable) {
               _this.sortTable(e, text, currentLine);
@@ -309,12 +348,14 @@
       return table;
     };
 
-    MarkdownEditor.prototype.csvToTable = function(e, text, currentLine) {
-      var base, csvLines, endPos, k, len, line, lines, rows, selectedText, startPos, table;
-      selectedText = this.getSelectedText();
-      lines = selectedText.split("\n");
+    MarkdownEditor.prototype.csvToTable = function(csv, text) {
+      var csvLines, endPos, k, len, line, lines, rows, startPos, table;
+      if (text == null) {
+        text = this.getTextArray();
+      }
+      lines = csv.split("\n");
       if (lines.length <= 1) {
-        return;
+        return false;
       }
       startPos = null;
       endPos = this.getSelectionStart();
@@ -332,13 +373,33 @@
         }
         endPos += line.length + 1;
       }
-      if (csvLines <= 1) {
-        return;
+      if (csvLines.length <= 1) {
+        return false;
       }
-      e.preventDefault();
       table = this.createTableFromArray(csvLines);
       this.replace(text, table, startPos, endPos);
-      return typeof (base = this.options).onMadeTable === "function" ? base.onMadeTable(e) : void 0;
+      return true;
+    };
+
+    MarkdownEditor.prototype.tsvToTable = function(text) {
+      var k, len, line, lines, rows, table, tsv, tsvLines;
+      tsvLines = [];
+      lines = text.split("\n");
+      for (k = 0, len = lines.length; k < len; k++) {
+        line = lines[k];
+        rows = line.split("\t");
+        if (rows.length > 1) {
+          tsv = true;
+          tsvLines.push(rows);
+        } else if (tsvLines.length > 0) {
+          break;
+        }
+      }
+      if (tsvLines.length <= 1) {
+        return;
+      }
+      table = this.createTableFromArray(tsvLines);
+      return this.replace(this.getTextArray(), table, this.getSelectionStart(), this.getSelectionEnd());
     };
 
     MarkdownEditor.prototype.createTableFromArray = function(csvLines) {
@@ -361,6 +422,48 @@
         }
       }
       return table;
+    };
+
+    MarkdownEditor.prototype.getPastedString = function(item) {
+      var type;
+      type = item.type;
+      return item.getAsString((function(_this) {
+        return function(str) {
+          return _this.onGetPastedString(type, str);
+        };
+      })(this));
+    };
+
+    MarkdownEditor.prototype.onGetPastedString = function(type, str) {
+      var generator, generatorMatch, metaMatch;
+      if (!str) {
+        this.clearPastedStrings();
+        return;
+      }
+      this.pastedStrings[type] = str;
+      if (this.pastedStrings['text/plain'] && this.pastedStrings['text/html']) {
+        metaMatch = this.pastedStrings['text/html'].match(requiredGeneratorMetaTagFormat);
+        if (metaMatch) {
+          generatorMatch = metaMatch[0].match(contentParser);
+          if (generatorMatch) {
+            generator = generatorMatch[1];
+            if (tsv2tableGenerators.test(generator)) {
+              this.tsvToTable(this.pastedStrings['text/plain']);
+            } else {
+              this.restorePlainText();
+            }
+          } else {
+            this.restorePlainText();
+          }
+        } else {
+          this.restorePlainText();
+        }
+        return this.clearPastedStrings();
+      }
+    };
+
+    MarkdownEditor.prototype.restorePlainText = function() {
+      return this.replace(this.getTextArray(), this.pastedStrings['text/plain'], this.getSelectionStart(), this.getSelectionEnd());
     };
 
     MarkdownEditor.prototype.tableFunction = function(e, text, currentLine) {
@@ -1110,6 +1213,7 @@
     onInsertedCodeblock: null,
     onSortedTable: null,
     onMadeTable: null,
+    convertSheetToTable: true,
     tabToSpace: true,
     list: true,
     table: true,
