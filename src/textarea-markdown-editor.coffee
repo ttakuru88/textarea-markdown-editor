@@ -46,6 +46,7 @@ class MarkdownEditor
 
         if items['text/plain'] && items['text/html'] && items['text/plain'].getAsString && items['text/html'].getAsString
           e.preventDefault()
+          @options.beforePastedObjectToTable?(e)
           @getPastedString(items['text/plain'])
           @getPastedString(items['text/html'])
 
@@ -860,6 +861,7 @@ defaultOptions =
   sortTable: true
   tableFunction: true
   significantFigures: 4
+  beforePastedObjectToTable: null
   uploadingFormat: (name) ->
     "![Uploading... #{name}]()"
 

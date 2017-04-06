@@ -61,7 +61,7 @@
       if (this.options.convertSheetToTable) {
         this.el.addEventListener('paste', (function(_this) {
           return function(e) {
-            var item, items, l, len, ref1;
+            var base, item, items, l, len, ref1;
             if (!e.clipboardData || !e.clipboardData.items) {
               return;
             }
@@ -76,6 +76,9 @@
             }
             if (items['text/plain'] && items['text/html'] && items['text/plain'].getAsString && items['text/html'].getAsString) {
               e.preventDefault();
+              if (typeof (base = _this.options).beforePastedObjectToTable === "function") {
+                base.beforePastedObjectToTable(e);
+              }
               _this.getPastedString(items['text/plain']);
               return _this.getPastedString(items['text/html']);
             }
@@ -1234,6 +1237,7 @@
     sortTable: true,
     tableFunction: true,
     significantFigures: 4,
+    beforePastedObjectToTable: null,
     uploadingFormat: function(name) {
       return "![Uploading... " + name + "]()";
     }
