@@ -84,7 +84,7 @@
       }
       this.el.addEventListener('keydown', (function(_this) {
         return function(e) {
-          var base, currentLine, text;
+          var base, base1, currentLine, text;
           if (e.keyCode === KeyCodes.enter && !e.shiftKey) {
             if (_this.options.list) {
               _this.supportInputListFormat(e);
@@ -110,6 +110,14 @@
                 e.preventDefault();
                 if (typeof (base = _this.options).onMadeTable === "function") {
                   base.onMadeTable(e);
+                }
+              }
+            }
+            if (_this.options.tsvToTable) {
+              if (_this.tsvToTable(_this.getSelectedText(), text)) {
+                e.preventDefault();
+                if (typeof (base1 = _this.options).onMadeTable === "function") {
+                  base1.onMadeTable(e);
                 }
               }
             }
@@ -348,12 +356,29 @@
       return table;
     };
 
-    MarkdownEditor.prototype.csvToTable = function(csv, text) {
-      var csvLines, endPos, k, len, line, lines, rows, startPos, table;
+    MarkdownEditor.prototype.csvToTable = function(csv, text, replace) {
       if (text == null) {
         text = this.getTextArray();
       }
-      lines = csv.split("\n");
+      if (replace == null) {
+        replace = false;
+      }
+      return this.separatedStringToTable(csv, ',', text);
+    };
+
+    MarkdownEditor.prototype.tsvToTable = function(tsv, text, replace) {
+      if (text == null) {
+        text = this.getTextArray();
+      }
+      if (replace == null) {
+        replace = false;
+      }
+      return this.separatedStringToTable(tsv, "\t", text, replace);
+    };
+
+    MarkdownEditor.prototype.separatedStringToTable = function(str, separator, text, replace) {
+      var csvLines, endPos, k, len, line, lines, rows, startPos, table;
+      lines = str.split("\n");
       if (lines.length <= 1) {
         return false;
       }
@@ -362,7 +387,7 @@
       csvLines = [];
       for (k = 0, len = lines.length; k < len; k++) {
         line = lines[k];
-        rows = line.split(',');
+        rows = line.split(separator);
         if (rows.length > 1) {
           csvLines.push(rows);
           if (startPos == null) {
@@ -377,29 +402,12 @@
         return false;
       }
       table = this.createTableFromArray(csvLines);
+      if (replace) {
+        startPos = this.getSelectionStart();
+        endPos = this.getSelectionEnd();
+      }
       this.replace(text, table, startPos, endPos);
       return true;
-    };
-
-    MarkdownEditor.prototype.tsvToTable = function(text) {
-      var k, len, line, lines, rows, table, tsv, tsvLines;
-      tsvLines = [];
-      lines = text.split("\n");
-      for (k = 0, len = lines.length; k < len; k++) {
-        line = lines[k];
-        rows = line.split("\t");
-        if (rows.length > 1) {
-          tsv = true;
-          tsvLines.push(rows);
-        } else if (tsvLines.length > 0) {
-          break;
-        }
-      }
-      if (tsvLines.length <= 1) {
-        return;
-      }
-      table = this.createTableFromArray(tsvLines);
-      return this.replace(this.getTextArray(), table, this.getSelectionStart(), this.getSelectionEnd());
     };
 
     MarkdownEditor.prototype.createTableFromArray = function(csvLines) {
@@ -448,7 +456,7 @@
           if (generatorMatch) {
             generator = generatorMatch[1];
             if (tsv2tableGenerators.test(generator)) {
-              this.tsvToTable(this.pastedStrings['text/plain']);
+              this.tsvToTable(this.pastedStrings['text/plain'], null, true);
             } else {
               this.restorePlainText();
             }
@@ -1222,6 +1230,7 @@
     autoTable: true,
     tableSeparator: '---',
     csvToTable: true,
+    tsvToTable: true,
     sortTable: true,
     tableFunction: true,
     significantFigures: 4,

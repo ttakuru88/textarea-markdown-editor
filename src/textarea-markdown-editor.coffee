@@ -65,6 +65,10 @@ class MarkdownEditor
           if @csvToTable(@getSelectedText(), text)
             e.preventDefault()
             @options.onMadeTable?(e)
+        if @options.tsvToTable
+          if @tsvToTable(@getSelectedText(), text)
+            e.preventDefault()
+            @options.onMadeTable?(e)
 
         @sortTable(e, text, currentLine) if @options.sortTable
         @tableFunction(e, text, currentLine) if @options.tableFunction
@@ -248,15 +252,21 @@ class MarkdownEditor
 
     table
 
-  csvToTable: (csv, text = @getTextArray()) ->
-    lines = csv.split("\n")
+  csvToTable: (csv, text = @getTextArray(), replace = false) ->
+    @separatedStringToTable(csv, ',', text)
+
+  tsvToTable: (tsv, text = @getTextArray(), replace = false) ->
+    @separatedStringToTable(tsv, "\t", text, replace)
+
+  separatedStringToTable: (str, separator, text, replace) ->
+    lines = str.split("\n")
     return false if lines.length <= 1
 
     startPos = null
     endPos = @getSelectionStart()
     csvLines = []
     for line in lines
-      rows = line.split(',')
+      rows = line.split(separator)
 
       if rows.length > 1
         csvLines.push(rows)
@@ -269,26 +279,13 @@ class MarkdownEditor
     return false if csvLines.length <= 1
 
     table = @createTableFromArray(csvLines)
+
+    if replace
+      startPos = @getSelectionStart()
+      endPos = @getSelectionEnd()
+
     @replace(text, table, startPos, endPos)
     true
-
-  tsvToTable: (text) ->
-    tsvLines = []
-
-    lines = text.split("\n")
-    for line in lines
-      rows = line.split("\t")
-      if rows.length > 1
-        tsv = true
-        tsvLines.push(rows)
-      else if tsvLines.length > 0
-        break
-
-    return if tsvLines.length <= 1
-
-    table = @createTableFromArray(tsvLines)
-
-    @replace(@getTextArray(), table, @getSelectionStart(), @getSelectionEnd())
 
   createTableFromArray: (csvLines) ->
     table = ''
@@ -322,7 +319,7 @@ class MarkdownEditor
         if generatorMatch
           generator = generatorMatch[1]
           if tsv2tableGenerators.test(generator)
-            @tsvToTable(@pastedStrings['text/plain'])
+            @tsvToTable(@pastedStrings['text/plain'], null, true)
           else
             @restorePlainText()
         else
@@ -859,6 +856,7 @@ defaultOptions =
   autoTable: true
   tableSeparator: '---'
   csvToTable: true
+  tsvToTable: true
   sortTable: true
   tableFunction: true
   significantFigures: 4
