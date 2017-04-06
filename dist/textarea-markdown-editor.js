@@ -1231,23 +1231,17 @@
   };
 
   window.markdownEditor = function(el, options) {
-    var args, defaultOptionName, markdownEditor, ref, value;
+    var defaultOptionName, value;
     if (options == null) {
       options = {};
     }
-    if (typeof options === 'string') {
-      args = Array.prototype.slice.call(arguments).slice(1);
-      markdownEditor = el.dataset.markdownEditor;
-      return (ref = markdownEditor[options]) != null ? ref.apply(markdownEditor, args) : void 0;
-    } else {
-      for (defaultOptionName in defaultOptions) {
-        value = defaultOptions[defaultOptionName];
-        if (options[defaultOptionName] == null) {
-          options[defaultOptionName] = value;
-        }
+    for (defaultOptionName in defaultOptions) {
+      value = defaultOptions[defaultOptionName];
+      if (options[defaultOptionName] == null) {
+        options[defaultOptionName] = value;
       }
-      return el.dataset.markdownEditor = new MarkdownEditor(el, options);
     }
+    return new MarkdownEditor(el, options);
   };
 
 }).call(this);

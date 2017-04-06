@@ -866,13 +866,7 @@ defaultOptions =
     "![Uploading... #{name}]()"
 
 window.markdownEditor = (el, options = {}) ->
-  if typeof options == 'string'
-    args = Array.prototype.slice.call(arguments).slice(1)
+  for defaultOptionName, value of defaultOptions
+     options[defaultOptionName] ?= value
 
-    markdownEditor = el.dataset.markdownEditor
-    return markdownEditor[options]?.apply(markdownEditor, args)
-  else
-    for defaultOptionName, value of defaultOptions
-       options[defaultOptionName] ?= value
-
-    el.dataset.markdownEditor = new MarkdownEditor(el, options)
+  new MarkdownEditor(el, options)
