@@ -310,7 +310,7 @@
     };
 
     MarkdownEditor.prototype.csvToTable = function(e, text, currentLine) {
-      var base, cell, csvLines, endPos, i, j, k, l, len, len1, len2, line, lines, m, n, ref, rows, selectedText, startPos, table;
+      var base, csvLines, endPos, k, len, line, lines, rows, selectedText, startPos, table;
       selectedText = this.getSelectedText();
       lines = selectedText.split("\n");
       if (lines.length <= 1) {
@@ -336,25 +336,31 @@
         return;
       }
       e.preventDefault();
+      table = this.createTableFromArray(csvLines);
+      this.replace(text, table, startPos, endPos);
+      return typeof (base = this.options).onMadeTable === "function" ? base.onMadeTable(e) : void 0;
+    };
+
+    MarkdownEditor.prototype.createTableFromArray = function(csvLines) {
+      var cell, i, j, k, l, len, len1, line, m, ref, table;
       table = '';
-      for (i = l = 0, len1 = csvLines.length; l < len1; i = ++l) {
+      for (i = k = 0, len = csvLines.length; k < len; i = ++k) {
         line = csvLines[i];
         table += "|";
-        for (m = 0, len2 = line.length; m < len2; m++) {
-          cell = line[m];
+        for (l = 0, len1 = line.length; l < len1; l++) {
+          cell = line[l];
           table += " " + (this.trim(cell)) + " |";
         }
         table += "\n";
         if (i === 0) {
           table += "|";
-          for (j = n = 0, ref = line.length; 0 <= ref ? n < ref : n > ref; j = 0 <= ref ? ++n : --n) {
+          for (j = m = 0, ref = line.length; 0 <= ref ? m < ref : m > ref; j = 0 <= ref ? ++m : --m) {
             table += " " + this.options.tableSeparator + " |";
           }
           table += "\n";
         }
       }
-      this.replace(text, table, startPos, endPos);
-      return typeof (base = this.options).onMadeTable === "function" ? base.onMadeTable(e) : void 0;
+      return table;
     };
 
     MarkdownEditor.prototype.tableFunction = function(e, text, currentLine) {

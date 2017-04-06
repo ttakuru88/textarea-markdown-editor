@@ -246,6 +246,12 @@ class MarkdownEditor
 
     e.preventDefault()
 
+    table = @createTableFromArray(csvLines)
+
+    @replace(text, table, startPos, endPos)
+    @options.onMadeTable?(e)
+
+  createTableFromArray: (csvLines) ->
     table = ''
     for line, i in csvLines
       table += "|"
@@ -258,9 +264,7 @@ class MarkdownEditor
         for j in [0...line.length]
           table += " #{@options.tableSeparator} |"
         table += "\n"
-
-    @replace(text, table, startPos, endPos)
-    @options.onMadeTable?(e)
+    table
 
   tableFunction: (e, text, currentLine) ->
     return if @isSelectRange()
