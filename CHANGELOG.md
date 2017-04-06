@@ -1,3 +1,6 @@
+## v1.2.0
+* TSV to table
+
 ## v1.1.0
 * Can Undo
 
