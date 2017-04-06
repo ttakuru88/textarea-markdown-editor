@@ -40,7 +40,6 @@ dist/index.html
 ### Install
 
 ```bash
-gem install grunt-cli
 npm install
 bower install
 ```

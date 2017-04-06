@@ -3,13 +3,15 @@ module.exports = (grunt) ->
     pkg: grunt.file.readJSON('package.json')
     clean:
       all: ['dist']
+      options:
+        'no-write': true
     watch:
       coffee:
         tasks: ['coffee']
         files: ['src/*.coffee']
       html:
         tasks: ['copy']
-        files: ['src/index.html']
+        files: ['src/index.html', 'src/marked.min.js']
     coffee:
       main:
         files:
