@@ -36,9 +36,9 @@
 
     functionFormat = /^=\s*(\S+)\s*$/;
 
-    requiredGeneratorMetaTagFormat = /<meta[^>]+?generator[^>]+?>/;
+    requiredGeneratorMetaTagFormat = /<meta[^>]+?generator[^>]+?>/i;
 
-    contentParser = /\scontent=['"]?([^'"]+)['"]?/;
+    contentParser = /\scontent=['"]?([^'"]+)['"]?/i;
 
     tsv2tableGenerators = /^Sheets$|^LibreOffice|^Microsoft Excel|^OpenOffice/;
 

@@ -19,8 +19,8 @@ class MarkdownEditor
   makingTableFormat = /^(:?)(\d+)x(\d+)(:?)$/
   numberFormat = /^-?\d+[\d\.]*$/
   functionFormat = /^=\s*(\S+)\s*$/
-  requiredGeneratorMetaTagFormat = /<meta[^>]+?generator[^>]+?>/
-  contentParser = /\scontent=['"]?([^'"]+)['"]?/
+  requiredGeneratorMetaTagFormat = /<meta[^>]+?generator[^>]+?>/i
+  contentParser = /\scontent=['"]?([^'"]+)['"]?/i
   tsv2tableGenerators = /^Sheets$|^LibreOffice|^Microsoft Excel|^OpenOffice/
 
   tableFunctions = ['sum', 'average', 'max', 'min', 'count']
