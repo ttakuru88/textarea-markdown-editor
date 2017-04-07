@@ -260,7 +260,7 @@ class MarkdownEditor
     @separatedStringToTable(tsv, "\t", text, replace)
 
   separatedStringToTable: (str, separator, text, replace) ->
-    lines = str.split("\n")
+    lines = str.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n")
     return false if lines.length <= 1
 
     startPos = null
@@ -319,9 +319,7 @@ class MarkdownEditor
         generatorMatch = metaMatch[0].match(contentParser)
         if generatorMatch
           generator = generatorMatch[1]
-          if tsv2tableGenerators.test(generator)
-            @tsvToTable(@pastedStrings['text/plain'], null, true)
-          else
+          unless tsv2tableGenerators.test(generator) && @tsvToTable(@pastedStrings['text/plain'], null, true)
             @restorePlainText()
         else
           @restorePlainText()

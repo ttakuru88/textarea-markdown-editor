@@ -381,7 +381,7 @@
 
     MarkdownEditor.prototype.separatedStringToTable = function(str, separator, text, replace) {
       var csvLines, endPos, k, len, line, lines, rows, startPos, table;
-      lines = str.split("\n");
+      lines = str.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
       if (lines.length <= 1) {
         return false;
       }
@@ -458,9 +458,7 @@
           generatorMatch = metaMatch[0].match(contentParser);
           if (generatorMatch) {
             generator = generatorMatch[1];
-            if (tsv2tableGenerators.test(generator)) {
-              this.tsvToTable(this.pastedStrings['text/plain'], null, true);
-            } else {
+            if (!(tsv2tableGenerators.test(generator) && this.tsvToTable(this.pastedStrings['text/plain'], null, true))) {
               this.restorePlainText();
             }
           } else {
