@@ -62,14 +62,17 @@ class MarkdownEditor
 
         @toggleCheck(e, text, currentLine) if @options.list
         @makeTable(e, text, currentLine) if @options.autoTable
+
         if @options.csvToTable
           if @csvToTable(@getSelectedText(), text)
             e.preventDefault()
             @options.onMadeTable?(e)
+            return
         if @options.tsvToTable
           if @tsvToTable(@getSelectedText(), text)
             e.preventDefault()
             @options.onMadeTable?(e)
+            return
 
         @sortTable(e, text, currentLine) if @options.sortTable
         @tableFunction(e, text, currentLine) if @options.tableFunction
@@ -253,47 +256,61 @@ class MarkdownEditor
 
     table
 
-  csvToTable: (csv, text = @getTextArray(), replace = false) ->
+  csvToTable: (csv, text = @getTextArray()) ->
     @separatedStringToTable(csv, ',', text)
 
-  tsvToTable: (tsv, text = @getTextArray(), replace = false) ->
-    @separatedStringToTable(tsv, "\t", text, replace)
+  tsvToTable: (tsv, text = @getTextArray()) ->
+    @separatedStringToTable(tsv, "\t", text)
 
-  separatedStringToTable: (str, separator, text, replace) ->
-    lines = str.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n")
-    return false if lines.length <= 1
+  separatedStringToTable: (str, separator, text) ->
+    str = str.replace(/\r\n/g, "\n").replace(/\r/g, "\n")
+    inQuote = false
+    escape = false
+    cells = [['']]
+    y = 0
+    x = 0
+    xMax = 0
+    for c, i in str
+      if inQuote
+        if escape
+          escape = false
+          cells[y][x] += c
+        else if !escape && c == '"'
+          if str[i+1] == '"'
+            escape = true
+          else
+            inQuote = false
+        else
+          cells[y][x] += c
+      else
+        if c == '"'
+          inQuote = true
+        else if c == separator
+          cells[y].push('')
+          x += 1
+          xMax = x if xMax < x
+        else if c == "\n"
+          cells.push([''])
+          y += 1
+          x = 0
+        else
+          cells[y][x] += c
 
-    startPos = null
-    endPos = @getSelectionStart()
-    csvLines = []
-    for line in lines
-      rows = line.split(separator)
+    return false if xMax <= 0 || y <= 0
 
-      if rows.length > 1
-        csvLines.push(rows)
-        startPos ?= endPos
-      else if csvLines.length > 0
-        break
-
-      endPos += line.length + 1
-
-    return false if csvLines.length <= 1
-
-    table = @createTableFromArray(csvLines)
-
-    if replace
-      startPos = @getSelectionStart()
-      endPos = @getSelectionEnd()
-
-    @replace(text, table, startPos, endPos)
+    table = @createTableFromArray(cells)
+    @replace(text, table, @getSelectionStart(), @getSelectionEnd())
     true
 
   createTableFromArray: (csvLines) ->
     table = ''
     for line, i in csvLines
+      if line.length == 1 && line[0] == ""
+        continue
+
       table += "|"
       for cell in line
-        table += " #{@trim(cell)} |"
+        table += " #{@trim(cell).replace(/\n/g, '<br>')} |"
       table += "\n"
 
       if i == 0
@@ -319,7 +336,7 @@ class MarkdownEditor
         generatorMatch = metaMatch[0].match(contentParser)
         if generatorMatch
           generator = generatorMatch[1]
-          unless tsv2tableGenerators.test(generator) && @tsvToTable(@pastedStrings['text/plain'], null, true)
+          unless tsv2tableGenerators.test(generator) && @tsvToTable(@pastedStrings['text/plain'])
             @restorePlainText()
         else
           @restorePlainText()

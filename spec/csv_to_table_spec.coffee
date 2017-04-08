@@ -28,8 +28,30 @@ describe 'Csv to table', ->
       keyCode = 32
 
     context 'csv', ->
-      beforeEach ->
-        action("a, b,c\ne,f, g", 0)
+      context 'basic', ->
+        beforeEach ->
+          action("a, b,c\ne,f, g", 0)
 
-      it 'to table', ->
-        expect(textarea.value).to.eql "| a | b | c |\n| --- | --- | --- |\n| e | f | g |\n"
+        it 'to table', ->
+          expect(textarea.value).to.eql "| a | b | c |\n| --- | --- | --- |\n| e | f | g |\n"
+
+      context 'quoted', ->
+        beforeEach ->
+          action("\"a, b\",c\ne,f", 0)
+
+        it 'to table', ->
+          expect(textarea.value).to.eql "| a, b | c |\n| --- | --- |\n| e | f |\n"
+
+      context 'quoted double quotation', ->
+        beforeEach ->
+          action("\"\"\"a\"\", b\",c\ne,f", 0)
+
+        it 'to table', ->
+          expect(textarea.value).to.eql "| \"a\", b | c |\n| --- | --- |\n| e | f |\n"
+
+      context 'new line in cell', ->
+        beforeEach ->
+          action("\"a\nb\",c\ne,f", 0)
+
+        it 'to table', ->
+          expect(textarea.value).to.eql "| a<br>b | c |\n| --- | --- |\n| e | f |\n"

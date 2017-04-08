@@ -80,6 +80,9 @@
 
 <main>
 <textarea id="editor">
+<!-- Auto complete after new line, Tab, Shift + Tab -->
+<!-- Invert checkbox after Shift + Tab -->
+
 * list1
 * list2
     * list2-1
@@ -87,7 +90,13 @@
 * [ ] checkbox
 * [x] checked
 
+- - -
+<!-- Auto complete after new line -->
+
 | h1 | H2 | H3 |
+
+- - -
+<!-- press "Shift + Space" on NxN -->
 
 4x3
 
@@ -97,20 +106,26 @@
 
 :2x2:
 
+- - -
+<!-- press "Shift + Space" after select CSV -->
+
 Name, Age,
 John Due, 44,
 Daniel Bob, 28,
 John Smith,99, :smile:
-Lisa, 18, F
+"Lisa,Liza", 18, F
 
 - - -
+<!-- press "Shift + Space" after select TSV -->
 
 0	0	0
-1	2	3
+"1	1.5"	2	3
 4	5	6
 7	8	9
 
 - - -
+
+<!-- press "Shift + Space" on header or =function -->
 
 |  | price |
 |---|---|

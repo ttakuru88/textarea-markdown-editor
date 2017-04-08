@@ -114,6 +114,7 @@
                 if (typeof (base = _this.options).onMadeTable === "function") {
                   base.onMadeTable(e);
                 }
+                return;
               }
             }
             if (_this.options.tsvToTable) {
@@ -122,6 +123,7 @@
                 if (typeof (base1 = _this.options).onMadeTable === "function") {
                   base1.onMadeTable(e);
                 }
+                return;
               }
             }
             if (_this.options.sortTable) {
@@ -359,57 +361,67 @@
       return table;
     };
 
-    MarkdownEditor.prototype.csvToTable = function(csv, text, replace) {
+    MarkdownEditor.prototype.csvToTable = function(csv, text) {
       if (text == null) {
         text = this.getTextArray();
-      }
-      if (replace == null) {
-        replace = false;
       }
       return this.separatedStringToTable(csv, ',', text);
     };
 
-    MarkdownEditor.prototype.tsvToTable = function(tsv, text, replace) {
+    MarkdownEditor.prototype.tsvToTable = function(tsv, text) {
       if (text == null) {
         text = this.getTextArray();
       }
-      if (replace == null) {
-        replace = false;
-      }
-      return this.separatedStringToTable(tsv, "\t", text, replace);
+      return this.separatedStringToTable(tsv, "\t", text);
     };
 
-    MarkdownEditor.prototype.separatedStringToTable = function(str, separator, text, replace) {
-      var csvLines, endPos, k, len, line, lines, rows, startPos, table;
-      lines = str.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
-      if (lines.length <= 1) {
-        return false;
-      }
-      startPos = null;
-      endPos = this.getSelectionStart();
-      csvLines = [];
-      for (k = 0, len = lines.length; k < len; k++) {
-        line = lines[k];
-        rows = line.split(separator);
-        if (rows.length > 1) {
-          csvLines.push(rows);
-          if (startPos == null) {
-            startPos = endPos;
+    MarkdownEditor.prototype.separatedStringToTable = function(str, separator, text) {
+      var c, cells, escape, i, inQuote, k, len, table, x, xMax, y;
+      str = str.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+      inQuote = false;
+      escape = false;
+      cells = [['']];
+      y = 0;
+      x = 0;
+      xMax = 0;
+      for (i = k = 0, len = str.length; k < len; i = ++k) {
+        c = str[i];
+        if (inQuote) {
+          if (escape) {
+            escape = false;
+            cells[y][x] += c;
+          } else if (!escape && c === '"') {
+            if (str[i + 1] === '"') {
+              escape = true;
+            } else {
+              inQuote = false;
+            }
+          } else {
+            cells[y][x] += c;
           }
-        } else if (csvLines.length > 0) {
-          break;
+        } else {
+          if (c === '"') {
+            inQuote = true;
+          } else if (c === separator) {
+            cells[y].push('');
+            x += 1;
+            if (xMax < x) {
+              xMax = x;
+            }
+          } else if (c === "\n") {
+            cells.push(['']);
+            y += 1;
+            x = 0;
+          } else {
+            cells[y][x] += c;
+          }
         }
-        endPos += line.length + 1;
       }
-      if (csvLines.length <= 1) {
+      if (xMax <= 0 || y <= 0) {
         return false;
       }
-      table = this.createTableFromArray(csvLines);
-      if (replace) {
-        startPos = this.getSelectionStart();
-        endPos = this.getSelectionEnd();
-      }
-      this.replace(text, table, startPos, endPos);
+      table = this.createTableFromArray(cells);
+      this.replace(text, table, this.getSelectionStart(), this.getSelectionEnd());
       return true;
     };
 
@@ -418,10 +430,13 @@
       table = '';
       for (i = k = 0, len = csvLines.length; k < len; i = ++k) {
         line = csvLines[i];
+        if (line.length === 1 && line[0] === "") {
+          continue;
+        }
         table += "|";
         for (l = 0, len1 = line.length; l < len1; l++) {
           cell = line[l];
-          table += " " + (this.trim(cell)) + " |";
+          table += " " + (this.trim(cell).replace(/\n/g, '<br>')) + " |";
         }
         table += "\n";
         if (i === 0) {
@@ -458,7 +473,7 @@
           generatorMatch = metaMatch[0].match(contentParser);
           if (generatorMatch) {
             generator = generatorMatch[1];
-            if (!(tsv2tableGenerators.test(generator) && this.tsvToTable(this.pastedStrings['text/plain'], null, true))) {
+            if (!(tsv2tableGenerators.test(generator) && this.tsvToTable(this.pastedStrings['text/plain']))) {
               this.restorePlainText();
             }
           } else {
