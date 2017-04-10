@@ -256,13 +256,13 @@ class MarkdownEditor
 
     table
 
-  csvToTable: (csv, text = @getTextArray()) ->
-    @separatedStringToTable(csv, ',', text)
+  csvToTable: (csv, text = @getTextArray(), allowFlat = false) ->
+    @separatedStringToTable(csv, ',', text, allowFlat)
 
-  tsvToTable: (tsv, text = @getTextArray()) ->
-    @separatedStringToTable(tsv, "\t", text)
+  tsvToTable: (tsv, text = @getTextArray(), allowFlat = false) ->
+    @separatedStringToTable(tsv, "\t", text, allowFlat)
 
-  separatedStringToTable: (str, separator, text) ->
+  separatedStringToTable: (str, separator, text, allowFlat) ->
     str = str.replace(/\r\n/g, "\n").replace(/\r/g, "\n")
     inQuote = false
     escape = false
@@ -296,7 +296,7 @@ class MarkdownEditor
         else
           cells[y][x] += c
 
-    return false if xMax <= 0 || y <= 0
+    return false if allowFlat && xMax <= 0 && y <= 0 || !allowFlat && xMax <= 0
 
     table = @createTableFromArray(cells)
     @replace(text, table, @getSelectionStart(), @getSelectionEnd())
@@ -336,7 +336,7 @@ class MarkdownEditor
         generatorMatch = metaMatch[0].match(contentParser)
         if generatorMatch
           generator = generatorMatch[1]
-          unless tsv2tableGenerators.test(generator) && @tsvToTable(@pastedStrings['text/plain'])
+          unless tsv2tableGenerators.test(generator) && @tsvToTable(@pastedStrings['text/plain'], null, true)
             @restorePlainText()
         else
           @restorePlainText()

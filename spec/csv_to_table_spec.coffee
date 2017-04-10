@@ -55,3 +55,17 @@ describe 'Csv to table', ->
 
         it 'to table', ->
           expect(textarea.value).to.eql "| a<br>b | c |\n| --- | --- |\n| e | f |\n"
+
+      context 'single col', ->
+        beforeEach ->
+          action("a, b, c", 0)
+
+        it 'to table', ->
+          expect(textarea.value).to.eql "| a | b | c |\n| --- | --- | --- |\n"
+
+      context 'single row', ->
+        beforeEach ->
+          action("a\nb\nc", 0)
+
+        it 'not to table', ->
+          expect(textarea.value).to.eql "a\nb\nc"

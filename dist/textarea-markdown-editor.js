@@ -361,21 +361,27 @@
       return table;
     };
 
-    MarkdownEditor.prototype.csvToTable = function(csv, text) {
+    MarkdownEditor.prototype.csvToTable = function(csv, text, allowFlat) {
       if (text == null) {
         text = this.getTextArray();
       }
-      return this.separatedStringToTable(csv, ',', text);
+      if (allowFlat == null) {
+        allowFlat = false;
+      }
+      return this.separatedStringToTable(csv, ',', text, allowFlat);
     };
 
-    MarkdownEditor.prototype.tsvToTable = function(tsv, text) {
+    MarkdownEditor.prototype.tsvToTable = function(tsv, text, allowFlat) {
       if (text == null) {
         text = this.getTextArray();
       }
-      return this.separatedStringToTable(tsv, "\t", text);
+      if (allowFlat == null) {
+        allowFlat = false;
+      }
+      return this.separatedStringToTable(tsv, "\t", text, allowFlat);
     };
 
-    MarkdownEditor.prototype.separatedStringToTable = function(str, separator, text) {
+    MarkdownEditor.prototype.separatedStringToTable = function(str, separator, text, allowFlat) {
       var c, cells, escape, i, inQuote, k, len, table, x, xMax, y;
       str = str.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
       inQuote = false;
@@ -417,7 +423,7 @@
           }
         }
       }
-      if (xMax <= 0 || y <= 0) {
+      if (allowFlat && xMax <= 0 && y <= 0 || !allowFlat && xMax <= 0) {
         return false;
       }
       table = this.createTableFromArray(cells);
@@ -473,7 +479,7 @@
           generatorMatch = metaMatch[0].match(contentParser);
           if (generatorMatch) {
             generator = generatorMatch[1];
-            if (!(tsv2tableGenerators.test(generator) && this.tsvToTable(this.pastedStrings['text/plain']))) {
+            if (!(tsv2tableGenerators.test(generator) && this.tsvToTable(this.pastedStrings['text/plain'], null, true))) {
               this.restorePlainText();
             }
           } else {
