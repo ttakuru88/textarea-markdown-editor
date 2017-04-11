@@ -12,7 +12,7 @@ class MarkdownEditor
   listFormat     = /^(\s*(-|\*|\+|\d+?\.)\s+(\[(\s|x)\]\s+)?)(\S*)/
   hrFormat       = /^\s{0,3}\s*((-\s+-\s+-(\s+-)*)|(\*\s+\*\s+\*(\s+\*)*))\s*$/
   rowFormat      = /^\s{0,3}\|(.*?\|)+\s*$/
-  rowSepFormat   = /^\s{0,3}\|(\s*:?---+:?\s*\|)+\s*$/
+  rowSepFormat   = /^\s{0,3}\|(\s*(:-{2,}|-{2,}:|:-{1,}:|-{3,})\s*\|)+\s*$/
   emptyRowFormat = /^\s{0,3}\|(\s*?\|)+\s*$/
   beginCodeblockFormat = /^\s{0,3}((```+)|(~~~+))(\S*\s*)$/
   endCodeblockFormat   = /^\s{0,3}((```+)|(~~~+))$/

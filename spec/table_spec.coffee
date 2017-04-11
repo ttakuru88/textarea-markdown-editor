@@ -64,16 +64,53 @@ describe 'Support table input', ->
         expect(textarea.value).to.eql "|a|b|\n|---|---|\n|aa|bb|"
 
     context 'in table', ->
-      beforeEach ->
-        text = "|a|b|\n|---|---|\n|aa|bb|"
-        action()
+      context '--- separator', ->
+        beforeEach ->
+          text = "|a|b|\n|---|---|\n|aa|bb|"
+          action()
 
-      it 'insert row only', ->
-        expect(textarea.value).to.eql "|a|b|\n|---|---|\n|aa|bb|\n|  |  |"
+        it 'insert row only', ->
+          expect(textarea.value).to.eql "|a|b|\n|---|---|\n|aa|bb|\n|  |  |"
 
-      it 'select first cell of second row', ->
-        expect(markdownEditor.selectionBegin).to.eql 26
-        expect(markdownEditor.selectionEnd).to.eql 26
+        it 'select first cell of second row', ->
+          expect(markdownEditor.selectionBegin).to.eql 26
+          expect(markdownEditor.selectionEnd).to.eql 26
+
+      context ':---: separator', ->
+        beforeEach ->
+          text = "|a|b|\n|:---:|:---:|\n|aa|bb|"
+          action()
+
+        it 'insert row only', ->
+          expect(textarea.value).to.eql "|a|b|\n|:---:|:---:|\n|aa|bb|\n|  |  |"
+
+        it 'select first cell of second row', ->
+          expect(markdownEditor.selectionBegin).to.eql 30
+          expect(markdownEditor.selectionEnd).to.eql 30
+
+      context ':-: separator', ->
+        beforeEach ->
+          text = "|a|b|\n|:-:|:-:|\n|aa|bb|"
+          action()
+
+        it 'insert row only', ->
+          expect(textarea.value).to.eql "|a|b|\n|:-:|:-:|\n|aa|bb|\n|  |  |"
+
+        it 'select first cell of second row', ->
+          expect(markdownEditor.selectionBegin).to.eql 26
+          expect(markdownEditor.selectionEnd).to.eql 26
+
+      context ':-- separator', ->
+        beforeEach ->
+          text = "|a|b|\n|:--|:--|\n|aa|bb|"
+          action()
+
+        it 'insert row only', ->
+          expect(textarea.value).to.eql "|a|b|\n|:--|:--|\n|aa|bb|\n|  |  |"
+
+        it 'select first cell of second row', ->
+          expect(markdownEditor.selectionBegin).to.eql 26
+          expect(markdownEditor.selectionEnd).to.eql 26
 
     context 'cursor on first cell', ->
       beforeEach ->
